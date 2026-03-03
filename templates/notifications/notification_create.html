@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% block title %}Create Notification{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-plus-circle"></i> 
+                    Create New Notification
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" id="notificationForm">
+                    {% csrf_token %}
+                    
+                    <!-- Title Field -->
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">
+                            <i class="bi bi-heading"></i> Title
+                        </label>
+                        {{ form.title }}
+                    </div>
+                    
+                    <!-- Message Field -->
+                    <div class="mb-3">
+                        <label for="{{ form.message.id_for_label }}" class="form-label">
+                            <i class="bi bi-chat-text"></i> Message
+                        </label>
+                        {{ form.message }}
+                    </div>
+                    
+                    <!-- Category Field -->
+                    {% if form.category %}
+                    <div class="mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label">
+                            <i class="bi bi-tags"></i> Category
+                        </label>
+                        {{ form.category }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Target Audience Section for Principal -->
+                    {% if user.role == 'principal' %}
+                    <div class="card mb-4 border-primary">
+                        <div class="card-header bg-light text-dark">
+                            <h5 class="mb-0"><i class="bi bi-people-fill"></i> Select Target Audience</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-3">Choose who should receive this notification:</p>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check mb-3">
+                                        {{ form.send_to_students }}
+                                        <label class="form-check-label" for="{{ form.send_to_students.id_for_label }}">
+                                            <i class="bi bi-person-workspace text-primary"></i> Students
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check mb-3">
+                                        {{ form.send_to_teachers }}
+                                        <label class="form-check-label" for="{{ form.send_to_teachers.id_for_label }}">
+                                            <i class="bi bi-person-badge text-success"></i> Teachers
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check mb-3">
+                                        {{ form.send_to_staff }}
+                                        <label class="form-check-label" for="{{ form.send_to_staff.id_for_label }}">
+                                            <i class="bi bi-person-gear text-info"></i> Staff
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="audience-message" class="mt-2 text-success"></div>
+                            
+                            <div class="alert alert-info mt-3 mb-0">
+                                <i class="bi bi-info-circle"></i>
+                                <small>You can select multiple groups. If none selected, notification will be saved as draft.</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- For teachers, show fixed audience -->
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Audience:</strong> This notification will be sent to <strong>ALL Students only</strong>
+                        {{ form.send_to_students.as_hidden }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Event Date Field -->
+                    <div class="mb-3">
+                        <label for="{{ form.event_date.id_for_label }}" class="form-label">
+                            <i class="bi bi-calendar-event"></i> Event Date (Optional)
+                        </label>
+                        {{ form.event_date }}
+                    </div>
+                    
+                    <!-- Draft Checkbox -->
+                    <div class="mb-3 form-check">
+                        {{ form.is_draft }}
+                        <label class="form-check-label" for="{{ form.is_draft.id_for_label }}">
+                            <i class="bi bi-pencil"></i> Save as draft
+                        </label>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" name="publish" value="publish" class="btn btn-primary me-md-2">
+                            <i class="bi bi-send"></i> Publish Now
+                        </button>
+                        <button type="submit" name="draft" value="draft" class="btn btn-secondary">
+                            <i class="bi bi-pencil"></i> Save as Draft
+                        </button>
+                        <a href="{% url 'notification_list' %}" class="btn btn-outline-danger">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Card -->
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-eye"></i> Live Preview</h5>
+            </div>
+            <div class="card-body">
+                <div id="preview" class="notification-preview">
+                    <h5 id="preview-title">Notification Title</h5>
+                    <p id="preview-message" class="text-muted">Your message will appear here...</p>
+                    <span id="preview-audience" class="badge bg-info">
+                        {% if user.role == 'principal' %}To: Selected Groups{% else %}To: All Students{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Live Preview and Targeting -->
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const titleInput = document.getElementById('{{ form.title.id_for_label }}');
+    const messageInput = document.getElementById('{{ form.message.id_for_label }}');
+    const previewTitle = document.getElementById('preview-title');
+    const previewMessage = document.getElementById('preview-message');
+    const previewAudience = document.getElementById('preview-audience');
+    
+    if (titleInput) {
+        titleInput.addEventListener('input', function() {
+            previewTitle.textContent = this.value || 'Notification Title';
+        });
+    }
+    
+    if (messageInput) {
+        messageInput.addEventListener('input', function() {
+            previewMessage.textContent = this.value || 'Your message will appear here...';
+        });
+    }
+    
+    {% if user.role == 'principal' %}
+    const studentCheck = document.getElementById('{{ form.send_to_students.id_for_label }}');
+    const teacherCheck = document.getElementById('{{ form.send_to_teachers.id_for_label }}');
+    const staffCheck = document.getElementById('{{ form.send_to_staff.id_for_label }}');
+    const audienceMsg = document.getElementById('audience-message');
+    
+    function updateAudienceSelection() {
+        const selected = [];
+        if (studentCheck && studentCheck.checked) selected.push('Students');
+        if (teacherCheck && teacherCheck.checked) selected.push('Teachers');
+        if (staffCheck && staffCheck.checked) selected.push('Staff');
+        
+        if (selected.length === 0) {
+            if (audienceMsg) {
+                audienceMsg.innerHTML = '<span class="text-warning">⚠️ No audience selected. This will be saved as draft.</span>';
+            }
+            if (previewAudience) {
+                previewAudience.textContent = 'To: No one (draft)';
+                previewAudience.className = 'badge bg-warning';
+            }
+        } else {
+            if (audienceMsg) {
+                audienceMsg.innerHTML = '<span class="text-success">✓ Will be sent to: ' + selected.join(', ') + '</span>';
+            }
+            if (previewAudience) {
+                previewAudience.textContent = 'To: ' + selected.join(', ');
+                previewAudience.className = 'badge bg-info';
+            }
+        }
+    }
+    
+    if (studentCheck && teacherCheck && staffCheck) {
+        studentCheck.addEventListener('change', updateAudienceSelection);
+        teacherCheck.addEventListener('change', updateAudienceSelection);
+        staffCheck.addEventListener('change', updateAudienceSelection);
+        updateAudienceSelection();
+    }
+    {% endif %}
+});
+</script>
+
+<style>
+.notification-preview {
+    border-left: 4px solid #0d6efd;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+#preview-title {
+    margin-bottom: 10px;
+    color: #0d6efd;
+}
+</style>
+{% endblock %}
+{% endblock %}

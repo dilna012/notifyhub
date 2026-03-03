@@ -1,0 +1,65 @@
+<!-- templates/notifications/sent_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}My Sent Notifications{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>My Sent Notifications</h2>
+    </div>
+    <div class="col text-end">
+        <a href="{% url 'notification_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> New Notification
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    {% for notification in notifications %}
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ notification.title }}</h5>
+                <p class="card-text">{{ notification.message|truncatechars:150 }}</p>
+                
+                {% if notification.event_date %}
+                <p class="card-text">
+                    <small class="text-muted">
+                        <i class="bi bi-calendar-event"></i> 
+                        Event: {{ notification.event_date|date:"M d, Y h:i A" }}
+                    </small>
+                </p>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        Sent: {{ notification.created_at|timesince }} ago
+                    </small>
+                    <div>
+                        <a href="{% url 'notification_detail' notification.id %}" class="btn btn-sm btn-outline-primary">
+                            View
+                        </a>
+                        <a href="{% url 'notification_stats' notification.id %}" class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-graph-up"></i> Stats
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="mt-2">
+                    <span class="badge bg-success">Read: {{ notification.get_read_count }}</span>
+                    <span class="badge bg-secondary">Total: {{ notification.get_total_students }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col">
+        <div class="alert alert-info">
+            You haven't sent any notifications yet.
+            <a href="{% url 'notification_create' %}" class="alert-link">Create your first notification</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

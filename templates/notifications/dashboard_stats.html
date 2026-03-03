@@ -1,0 +1,252 @@
+<!-- templates/notifications/dashboard_stats.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-value {
+        font-size: 2.5em;
+        font-weight: bold;
+        color: #667eea;
+    }
+    .stat-label {
+        color: #666;
+        font-size: 0.9em;
+        text-transform: uppercase;
+    }
+    .progress {
+        height: 10px;
+        border-radius: 5px;
+    }
+    .progress-bar {
+        background: #667eea;
+    }
+    .badge-category {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8em;
+    }
+    .badge-academic { background: #e3f2fd; color: #1976d2; }
+    .badge-exam { background: #fff3e0; color: #f57c00; }
+    .badge-event { background: #e8f5e9; color: #388e3c; }
+    .badge-holiday { background: #f3e5f5; color: #8e24aa; }
+    .badge-urgent { background: #ffebee; color: #d32f2f; }
+    .badge-general { background: #e0e0e0; color: #424242; }
+    
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        margin-bottom: 20px;
+    }
+    .card-header {
+        background: white;
+        border-bottom: 2px solid #f0f0f0;
+        border-radius: 15px 15px 0 0;
+        padding: 15px 20px;
+        font-weight: 600;
+    }
+</style>
+
+<div class="container-fluid px-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <i class="bi bi-graph-up" style="color: #667eea;"></i> 
+                {% if is_principal %}
+                    Principal's Dashboard
+                {% else %}
+                    Teacher's Dashboard
+                {% endif %}
+            </h2>
+        </div>
+        <div class="col text-end">
+            <a href="{% url 'notification_list' %}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ total_notifications|default:"0" }}</div>
+                <div class="stat-label">Total Notifications</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ read_stats|length|default:"0" }}</div>
+                <div class="stat-label">Last 30 Days</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">
+                    {% if read_stats %}
+                        {% with max_read=read_stats|dictsort:"read_percentage"|last %}
+                            {{ max_read.read_percentage|default:"0" }}%
+                        {% endwith %}
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+                <div class="stat-label">Best Read Rate</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">
+                    {% if read_stats.0.total_students %}
+                        {{ read_stats.0.total_students }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </div>
+                <div class="stat-label">Total Students</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Distribution -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-pie-chart"></i> Notifications by Category
+                </div>
+                <div class="card-body">
+                    {% if category_stats %}
+                        {% for stat in category_stats %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span class="badge-category badge-{{ stat.category }}">
+                                    {% if stat.category == 'academic' %}📚 Academic
+                                    {% elif stat.category == 'exam' %}📝 Exam
+                                    {% elif stat.category == 'event' %}🎉 Event
+                                    {% elif stat.category == 'holiday' %}🏖️ Holiday
+                                    {% elif stat.category == 'urgent' %}⚠️ Urgent
+                                    {% else %}📢 General
+                                    {% endif %}
+                                </span>
+                                <span>{{ stat.count }}</span>
+                            </div>
+                            <div class="progress mt-2">
+                                {% widthratio stat.count total_notifications 100 as width %}
+                                <div class="progress-bar" style="width: {{ width }}%"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-clock-history"></i> Recent Reads
+                </div>
+                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                    {% if recent_activity %}
+                        {% for activity in recent_activity %}
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="me-3">
+                                <i class="bi bi-person-circle" style="font-size: 1.5em; color: #667eea;"></i>
+                            </div>
+                            <div>
+                                <strong>{{ activity.user.username }}</strong>
+                                <small class="d-block text-muted">
+                                    read "{{ activity.notification.title|truncatechars:30 }}"
+                                </small>
+                                <small class="text-muted">{{ activity.read_at|timesince }} ago</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No recent activity</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Read Rate Table -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-table"></i> Notification Read Rates
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Read</th>
+                                    <th>Unread</th>
+                                    <th>Rate</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in read_stats %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'notification_detail' stat.id %}">
+                                            {{ stat.title|truncatechars:40 }}
+                                        </a>
+                                    </td>
+                                    <td>{{ stat.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <span class="badge-category badge-{{ stat.category }}">
+                                            {{ stat.get_category_display }}
+                                        </span>
+                                    </td>
+                                    <td class="text-success">{{ stat.read_count }}</td>
+                                    <td class="text-danger">{{ stat.unread_count }}</td>
+                                    <td>
+                                        <strong>{{ stat.read_percentage }}%</strong>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'notification_stats' stat.id %}" class="btn btn-sm btn-outline-info">
+                                            Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No notifications found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+        
+        
+          

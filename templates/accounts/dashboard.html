@@ -1,0 +1,218 @@
+<!-- templates/accounts/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>
+            <i class="bi bi-person-circle"></i> 
+            Welcome, 
+            {% if user.first_name %}
+                {{ user.first_name }}!
+            {% else %}
+                {{ user.username }}!
+            {% endif %}
+        </h2>
+        <p class="text-muted">
+            You are logged in as <span class="badge bg-secondary">{{ user.get_role_display }}</span>
+        </p>
+    </div>
+</div>
+
+{% if user.role == 'principal' or user.role == 'teacher' %}
+<!-- Principal and Teacher Dashboard -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="modern-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-2">Drafts</h6>
+                    <h2 class="fw-bold">{{ drafts_count|default:"0" }}</h2>
+                </div>
+                <div class="display-4 text-primary">
+                    <i class="fas fa-pen"></i>
+                </div>
+            </div>
+            <a href="{% url 'draft_list' %}" class="btn btn-link text-primary p-0 mt-3">
+                View Drafts <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="modern-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-2">Total Sent</h6>
+                    <h2 class="fw-bold">{{ total_sent|default:"0" }}</h2>
+                </div>
+                <div class="display-4 text-success">
+                    <i class="fas fa-paper-plane"></i>
+                </div>
+            </div>
+            <a href="{% url 'notification_list' %}" class="btn btn-link text-success p-0 mt-3">
+                View All <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="modern-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-2">Quick Actions</h6>
+                    <p class="mb-0">Create new notification</p>
+                </div>
+                <div class="display-4 text-info">
+                    <i class="fas fa-bolt"></i>
+                </div>
+            </div>
+            <a href="{% url 'notification_create' %}" class="btn btn-link text-info p-0 mt-3">
+                Create Now <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="modern-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0">
+            <i class="fas fa-history text-primary"></i> Recent Notifications
+        </h5>
+        <a href="{% url 'notification_dashboard' %}" class="btn btn-sm btn-primary">
+            <i class="fas fa-chart-line"></i> View Analytics
+        </a>
+    </div>
+    
+    {% if recent_notifications %}
+        <div class="list-group list-group-flush">
+            {% for notification in recent_notifications %}
+            <a href="{% url 'notification_detail' notification.id %}" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 fw-bold">{{ notification.title }}</h6>
+                        <p class="mb-1 text-muted">{{ notification.message|truncatechars:100 }}</p>
+                        <small>
+                            <i class="fas fa-chart-simple"></i> 
+                            Read: {{ notification.get_read_count }}/{{ notification.get_total_students }}
+                        </small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge category-badge category-{{ notification.category }}">
+                            {{ notification.get_category_display }}
+                        </span>
+                        <br>
+                        <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">No notifications yet</h5>
+            <a href="{% url 'notification_create' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-plus"></i> Create Notification
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% elif user.role == 'staff' %}
+<!-- Staff Dashboard -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <a href="{% url 'notification_list' %}" class="text-decoration-none">
+            <div class="modern-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Unread Notifications</h6>
+                        <h2 class="fw-bold text-warning">{{ unread_count|default:"0" }}</h2>
+                    </div>
+                    <div class="display-4 text-warning">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    
+    <div class="col-md-6">
+        <a href="{% url 'notification_list' %}" class="text-decoration-none">
+            <div class="modern-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Total Notifications</h6>
+                        <h2 class="fw-bold text-info">{{ total_notifications|default:"0" }}</h2>
+                    </div>
+                    <div class="display-4 text-info">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="modern-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0">
+            <i class="fas fa-clock text-primary"></i> Recent Notifications
+        </h5>
+        <a href="{% url 'notification_list' %}" class="btn btn-sm btn-outline-primary">
+            View All <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+    
+    {% if recent_notifications %}
+        <div class="list-group list-group-flush">
+            {% for item in recent_notifications %}
+            <a href="{% url 'notification_detail' item.notification.id %}" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 fw-bold">
+                            {{ item.notification.title }}
+                            {% if not item.is_read %}
+                                <span class="badge bg-danger ms-2">New</span>
+                            {% endif %}
+                        </h6>
+                        <p class="mb-1 text-muted">{{ item.notification.message|truncatechars:100 }}</p>
+                        <small>
+                            <i class="fas fa-user"></i> {{ item.notification.sender.get_role_display }}
+                            <span class="ms-3"><i class="fas fa-clock"></i> {{ item.notification.created_at|timesince }} ago</span>
+                        </small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge category-badge category-{{ item.notification.category }}">
+                            {{ item.notification.get_category_display }}
+                        </span>
+                        <br>
+                        {% if item.is_read %}
+                            <small class="text-success"><i class="fas fa-check-circle"></i> Read</small>
+                        {% else %}
+                            <small class="text-warning"><i class="fas fa-circle"></i> Unread</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">No notifications yet</h5>
+        </div>
+    {% endif %}
+</div>
+
+{% else %}
+<!-- Fallback for other roles -->
+<div class="alert alert-info">
+    <i class="fas fa-info-circle"></i>
+    Welcome to the Notification System. Please contact administrator for access.
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,112 @@
+<!-- templates/notifications/notification_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>
+            {% if user.role in 'principal,teacher' %}
+                Sent Notifications
+            {% else %}
+                All Notifications
+            {% endif %}
+        </h2>
+    </div>
+    {% if user.can_send_notifications %}
+    <div class="col text-end">
+        <a href="{% url 'notification_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> New Notification
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row">
+    {% for item in notifications %}
+    <div class="col-md-6 mb-3">
+        <div class="card {% if not item.is_read %}border-primary{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h5 class="card-title">
+                        {% if user.role in 'student,staff' %}
+                            {{ item.notification.title }}
+                            {% if not item.is_read %}
+                                <span class="badge bg-danger">New</span>
+                            {% endif %}
+                        {% else %}
+                            {{ item.title }}
+                        {% endif %}
+                    </h5>
+                    <small class="text-muted">
+                        {% if user.role in 'student,staff' %}
+                            {{ item.notification.created_at|date:"M d, Y" }}
+                        {% else %}
+                            {{ item.created_at|date:"M d, Y" }}
+                        {% endif %}
+                    </small>
+                </div>
+                
+                <p class="card-text">
+                    {% if user.role in 'student,staff' %}
+                        {{ item.notification.message|truncatechars:150 }}
+                    {% else %}
+                        {{ item.message|truncatechars:150 }}
+                    {% endif %}
+                </p>
+                
+                {% if user.role in 'student,staff' %}
+                    {% if item.notification.event_date %}
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="bi bi-calendar-event"></i> 
+                            Event: {{ item.notification.event_date|date:"M d, Y h:i A" }}
+                        </small>
+                    </p>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-info">{{ item.notification.sender.get_role_display }}</span>
+                        <div>
+                            {% if item.reminder_time %}
+                                <span class="badge bg-warning" title="Reminder set">
+                                    <i class="bi bi-alarm"></i>
+                                </span>
+                            {% endif %}
+                            <a href="{% url 'notification_detail' item.notification.id %}" class="btn btn-sm btn-outline-primary">
+                                Read More
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-success">Read: {{ item.get_read_count }}</span>
+                            <span class="badge bg-secondary">Total: {{ item.get_total_students }}</span>
+                        </div>
+                        <div>
+                            <a href="{% url 'notification_detail' item.id %}" class="btn btn-sm btn-outline-primary">
+                                View
+                            </a>
+                            <a href="{% url 'notification_stats' item.id %}" class="btn btn-sm btn-outline-info">
+                                <i class="bi bi-graph-up"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col">
+        <div class="alert alert-info">
+            No notifications found.
+            {% if user.can_send_notifications %}
+                <a href="{% url 'notification_create' %}" class="alert-link">Create your first notification</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

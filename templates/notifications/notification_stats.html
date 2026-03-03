@@ -1,0 +1,101 @@
+<!-- templates/notifications/notification_stats.html -->
+{% extends 'base.html' %}
+
+{% block title %}Statistics - {{ notification.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'notification_list' %}">Notifications</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'notification_detail' notification.id %}">{{ notification.title|truncatechars:20 }}</a></li>
+                <li class="breadcrumb-item active">Statistics</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col">
+        <h2>Read Statistics: {{ notification.title }}</h2>
+        <p class="text-muted">Sent to all {{ recipient_type }} ({{ total_recipients }} recipients)</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Read</h5>
+                <h2>{{ read_count }}</h2>
+                <p class="mb-0">{{ read_percentage|floatformat:1 }}% of recipients</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Unread</h5>
+                <h2>{{ unread_count }}</h2>
+                <p class="mb-0">{{ unread_percentage|floatformat:1 }}% of recipients</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Total Recipients</h5>
+                <h2>{{ total_recipients }}</h2>
+                <p class="mb-0">{{ recipient_type }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Reading Progress</h5>
+    </div>
+    <div class="card-body">
+        <div class="progress mb-3" style="height: 30px;">
+            <div class="progress-bar bg-success" style="width: {{ read_percentage }}%">
+                Read ({{ read_count }})
+            </div>
+            <div class="progress-bar bg-danger" style="width: {{ unread_percentage }}%">
+                Unread ({{ unread_count }})
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if unread_users %}
+<div class="card">
+    <div class="card-header">
+        <h5>Users Who Haven't Read Yet</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in unread_users %}
+                    <tr>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td><span class="badge bg-secondary">{{ user.get_role_display }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

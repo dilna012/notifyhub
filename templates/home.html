@@ -1,0 +1,380 @@
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Welcome - Nehru Arts And Science College Kanhangad{% endblock %}
+
+{% block content %}
+<style>
+    /* College Colors - Professional Blue Theme */
+    :root {
+        --primary-color: #003366; /* Dark Blue */
+        --secondary-color: #FFD700; /* Gold */
+        --accent-color: #1e4d8c; /* Medium Blue */
+        --light-bg: #f5f8fc;
+        --text-dark: #2c3e50;
+        --text-light: #6c757d;
+    }
+    
+    body {
+        background: var(--light-bg);
+    }
+    
+    /* Hero Section with College Image */
+    .hero-section {
+        background: linear-gradient(rgba(0, 51, 102, 0.7), rgba(0, 51, 102, 0.7)), 
+                    url('https://lh3.googleusercontent.com/gps-cs-s/AHVAwerYenbvLNy2XMbeEzMeNO-kT5IWPK90iH2V6vLlihSeynXOhAO7hiour5XH6g7nfQEWOnyP8PnEpcZQ5dwdXMXHnz82pIT6RY_MPS6WIiw1mk9I3QQZDT07jpCbTek2ELrY1yM=s680-w680-h510-rw');
+        background-size: cover;
+        background-position: center;
+        color: white;
+        padding: 100px 0;
+        text-align: center;
+        border-bottom: 5px solid var(--secondary-color);
+    }
+    
+    .college-logo {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        border: 3px solid var(--secondary-color);
+    }
+    
+    .college-logo i {
+        font-size: 40px;
+        color: var(--primary-color);
+    }
+    
+    .college-name {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        letter-spacing: 1px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .college-location {
+        font-size: 1.3rem;
+        opacity: 0.95;
+        margin-bottom: 20px;
+    }
+    
+    .hero-buttons {
+        margin-top: 30px;
+    }
+    
+    .btn-primary-custom {
+        background: var(--secondary-color);
+        color: var(--primary-color);
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        border: none;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        background: #ffd700;
+        color: var(--primary-color);
+    }
+    
+    .btn-outline-custom {
+        background: transparent;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        border: 2px solid white;
+        transition: all 0.3s ease;
+        margin: 0 10px;
+    }
+    
+    .btn-outline-custom:hover {
+        background: white;
+        color: var(--primary-color);
+        transform: translateY(-3px);
+    }
+    
+    /* Section Titles */
+    .section-title {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+    
+    .section-title h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        position: relative;
+        display: inline-block;
+        padding-bottom: 15px;
+    }
+    
+    .section-title h2:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: var(--secondary-color);
+        border-radius: 2px;
+    }
+    
+    /* Welcome Card */
+    .welcome-card {
+        background: white;
+        border-radius: 20px;
+        padding: 50px;
+        box-shadow: 0 20px 40px rgba(0, 51, 102, 0.15);
+        margin: 50px 0;
+        border: 1px solid rgba(0, 51, 102, 0.1);
+    }
+    
+    .welcome-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 20px;
+    }
+    
+    .welcome-text {
+        color: var(--text-light);
+        font-size: 1.2rem;
+        line-height: 1.8;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    /* Stats Section */
+    .stats-section {
+        background: var(--primary-color);
+        color: white;
+        padding: 60px 0;
+        margin: 50px 0;
+        border-radius: 10px;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .stat-number {
+        font-size: 2.8rem;
+        font-weight: 800;
+        margin-bottom: 10px;
+        color: var(--secondary-color);
+    }
+    
+    .stat-label {
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.9;
+    }
+    
+    /* CTA Section */
+    .cta-section {
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        color: white;
+        padding: 70px 0;
+        text-align: center;
+        border-radius: 15px;
+        margin: 50px 0;
+    }
+    
+    .cta-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+    
+    .cta-button {
+        background: var(--secondary-color);
+        color: var(--primary-color);
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        border: none;
+        margin: 10px;
+    }
+    
+    .cta-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        background: #ffd700;
+    }
+    
+    .cta-button-outline {
+        background: transparent;
+        color: white;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        border: 2px solid white;
+        margin: 10px;
+    }
+    
+    .cta-button-outline:hover {
+        background: white;
+        color: var(--primary-color);
+        transform: translateY(-3px);
+    }
+    
+    /* Footer */
+    .college-footer {
+        background: #1a2639;
+        color: white;
+        padding: 40px 0;
+        margin-top: 50px;
+    }
+    
+    .footer-text {
+        opacity: 0.8;
+        font-size: 0.95rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .college-name {
+            font-size: 2rem;
+        }
+        
+        .hero-buttons .btn {
+            display: block;
+            margin: 10px auto;
+            width: 80%;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+        }
+        
+        .cta-button, .cta-button-outline {
+            display: block;
+            width: 80%;
+            margin: 10px auto;
+        }
+    }
+</style>
+
+<!-- Hero Section with College Image -->
+<div class="hero-section">
+    <div class="container">
+        <div class="college-logo">
+            <i class="fas fa-university"></i>
+        </div>
+        <h1 class="college-name">Nehru Arts And Science College</h1>
+        <div class="college-location">
+            <i class="fas fa-map-marker-alt me-2"></i> Kanhangad, Kerala
+        </div>
+        <div class="hero-buttons">
+            <a href="{% url 'student_notifications' %}" class="btn-primary-custom">
+                <i class="fas fa-bell"></i> Student Notification Board
+            </a>
+            <a href="{% url 'login' %}" class="btn-outline-custom">
+                <i class="fas fa-sign-in-alt"></i> Staff Login
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Welcome Section -->
+<div class="container">
+    <div class="welcome-card text-center">
+        <h2 class="welcome-title">Welcome to the Digital Notification System</h2>
+        <p class="welcome-text">
+            A centralized platform for all college announcements, exam schedules, event updates, and important notices. 
+            Stay connected with real-time notifications tailored for students, faculty, and staff.
+        </p>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="container">
+    <div class="stats-section">
+        <div class="row">
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number">1000+</div>
+                    <div class="stat-label">Notifications</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Students</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Faculty</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number">95%</div>
+                    <div class="stat-label">Read Rate</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="container text-center my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="cta-section">
+                <h2 class="cta-title">Stay Updated with College Notifications</h2>
+                <p class="lead mb-4">Access the public notification board or login to manage announcements</p>
+                <a href="{% url 'student_notifications' %}" class="cta-button">
+                    <i class="fas fa-bell"></i> View Notifications
+                </a>
+                <a href="{% url 'login' %}" class="cta-button-outline">
+                    <i class="fas fa-sign-in-alt"></i> Staff Access
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="college-footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <h5><i class="fas fa-university me-2"></i> Nehru Arts And Science College</h5>
+                <p class="footer-text">Kanhangad, Kasaragod District, Kerala - 671315</p>
+                <p class="footer-text">Established 1965 | Affiliated to Kannur University</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <p class="footer-text">© 2026 Notification Management System</p>
+                <p class="footer-text">All rights reserved</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

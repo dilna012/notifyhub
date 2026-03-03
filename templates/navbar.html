@@ -1,0 +1,69 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'dashboard' %}">
+            <i class="bi bi-bell"></i> Notification System
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}">
+                        <i class="fas fa-home"></i> 
+                        <span class="d-none d-lg-inline">Home</span>
+                    </a>
+                </li>
+                
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'dashboard' %}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'dashboard' %}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                
+                {% if user.can_send_notifications %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'notification_create' %}">
+                        <i class="bi bi-plus-circle"></i> New
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'draft_list' %}">
+                        <i class="bi bi-pencil"></i> Drafts
+                    </a>
+                </li>
+                {% endif %}
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'notification_list' %}">
+                        <i class="bi bi-list"></i> All
+                    </a>
+                </li>
+                
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i> {{ user.username }}
+                        <span class="badge bg-light text-dark">{{ user.get_role_display }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'dashboard' %}">Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'notification_dashboard' %}">
+                        <i class="bi bi-graph-up"></i> Analytics
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

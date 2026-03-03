@@ -1,0 +1,351 @@
+<!-- templates/notifications/student_view.html -->
+{% extends 'base.html' %}
+
+{% block title %}Student Notification Board{% endblock %}
+
+{% block content %}
+<style>
+    /* Category Badge Styles */
+    .category-badge {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: 500;
+        margin-bottom: 10px;
+    }
+    .category-academic { background: #e3f2fd; color: #1976d2; }
+    .category-exam { background: #fff3e0; color: #f57c00; }
+    .category-event { background: #e8f5e9; color: #388e3c; }
+    .category-holiday { background: #f3e5f5; color: #8e24aa; }
+    .category-urgent { background: #ffebee; color: #d32f2f; animation: pulse 2s infinite; }
+    .category-general { background: #e0e0e0; color: #424242; }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.8; background: #ffcdd2; }
+        100% { opacity: 1; }
+    }
+    
+    /* Header */
+    .student-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    
+    .student-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    /* Filter Section */
+    .filter-section {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .btn-outline-primary {
+        border-radius: 20px !important;
+        padding: 8px 20px;
+        margin: 2px;
+        border: 2px solid #667eea;
+        color: #667eea;
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: #667eea;
+        color: white;
+    }
+    
+    .btn-outline-primary.active {
+        background-color: #667eea;
+        color: white;
+    }
+    
+    /* Notification Card */
+    .notification-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        border-left: 5px solid #667eea;
+    }
+    
+    .notification-title {
+        color: #333;
+        font-size: 1.5em;
+        font-weight: 600;
+    }
+    
+    .notification-meta {
+        display: flex;
+        justify-content: space-between;
+        color: #777;
+        font-size: 0.9em;
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+        margin-top: 15px;
+    }
+    
+    .badge-sender {
+        background: #667eea;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+    }
+    
+    /* Search Box */
+    .search-box {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .search-box input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+    }
+    
+    /* Reminder Section */
+    .reminder-section {
+        border-top: 1px dashed #dee2e6;
+        padding-top: 15px;
+        margin-top: 15px;
+    }
+    
+    .reminder-form {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 10px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .reminder-status {
+        margin-top: 10px;
+        padding: 8px;
+        border-radius: 5px;
+    }
+    
+    .reminder-status.success {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .date-badge {
+        background: #f8f9fa;
+        padding: 5px 10px;
+        border-radius: 20px;
+        color: #667eea;
+        display: inline-block;
+        margin-top: 10px;
+    }
+</style>
+
+<!-- Student Header -->
+<div class="student-header">
+    <h1><i class="fas fa-bell"></i> College Notification Board</h1>
+    <p class="lead mb-0">Stay updated with the latest announcements</p>
+    <div class="date-badge">
+        <i class="fas fa-calendar-alt"></i> Last updated: {% now "F j, Y" %}
+    </div>
+</div>
+
+<!-- Search Box -->
+<div class="search-box">
+    <input type="text" id="searchInput" placeholder="🔍 Search notifications by title or message..." class="form-control">
+</div>
+
+<!-- Filter Buttons -->
+<div class="filter-section">
+    <div style="margin-bottom: 10px; font-weight: bold;">
+        <i class="fas fa-filter"></i> Filter by Category:
+    </div>
+    <div>
+        <button class="btn btn-sm btn-outline-primary" onclick="filterByCategory('all', this)">All</button>
+        <button class="btn btn-sm btn-outline-primary" onclick="filterByCategory('academic', this)">📚 Academic</button>
+        <button class="btn btn-sm btn-outline-primary" onclick="filterByCategory('exam', this)">📝 Exam</button>
+        <button class="btn btn-sm btn-outline-primary" onclick="filterByCategory('event', this)">🎉 Event</button>
+        <button class="btn btn-sm btn-outline-primary" onclick="filterByCategory('holiday', this)">🏖️ Holiday</button>
+        <button class="btn btn-sm btn-outline-primary" onclick="filterByCategory('urgent', this)">⚠️ Urgent</button>
+        <button class="btn btn-sm btn-outline-primary" onclick="filterByCategory('general', this)">📢 General</button>
+    </div>
+</div>
+
+<!-- Notifications List -->
+<div class="row" id="notificationsContainer">
+    {% for notification in notifications %}
+    <div class="col-12 notification-item" 
+         data-title="{{ notification.title|lower }}" 
+         data-message="{{ notification.message|lower }}"
+         data-category="{{ notification.category }}">
+        <div class="notification-card" id="notification-{{ notification.id }}">
+            
+            <!-- Category Badge -->
+            <div class="mb-2">
+                <span class="category-badge category-{{ notification.category }}">
+                    <i class="fas fa-tag"></i> {{ notification.get_category_display }}
+                </span>
+            </div>
+            
+            <!-- Title -->
+            <h2 class="notification-title">
+                <i class="fas fa-bell text-primary"></i> {{ notification.title }}
+            </h2>
+            
+            <!-- Message -->
+            <div class="notification-message">
+                {{ notification.message|linebreaks }}
+            </div>
+            
+            <!-- Event Date -->
+            {% if notification.event_date %}
+            <div class="alert alert-info">
+                <i class="fas fa-calendar-alt"></i>
+                <strong>Event:</strong> {{ notification.event_date|date:"l, F j, Y h:i A" }}
+            </div>
+            {% endif %}
+            
+            <!-- Reminder Section -->
+            <div class="reminder-section">
+                <button class="btn btn-sm btn-outline-warning" onclick="showReminderForm({{ notification.id }})">
+                    <i class="fas fa-clock"></i> Set Reminder
+                </button>
+                
+                <div id="reminder-form-{{ notification.id }}" class="reminder-form" style="display: none;">
+                    <div class="input-group">
+                        <input type="datetime-local" id="reminder-time-{{ notification.id }}" class="form-control">
+                        <button class="btn btn-warning btn-sm" onclick="setReminder({{ notification.id }})">Save</button>
+                        <button class="btn btn-secondary btn-sm" onclick="hideReminderForm({{ notification.id }})">Cancel</button>
+                    </div>
+                </div>
+                
+                <div id="reminder-status-{{ notification.id }}" class="reminder-status"></div>
+            </div>
+            
+            <!-- Meta Info -->
+            <div class="notification-meta">
+                <div>
+                    <span class="badge-sender">
+                        <i class="fas fa-user"></i> {{ notification.sender.get_role_display }}
+                    </span>
+                </div>
+                <div>
+                    <i class="fas fa-clock"></i> {{ notification.created_at|date:"M d, Y" }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="text-center p-5 bg-white rounded-3">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h3 class="text-muted">No Notifications</h3>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Debug Buttons -->
+<div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <button class="btn btn-sm btn-info" onclick="showAllReminders()" title="Show all reminders">
+        <i class="fas fa-bell"></i>
+    </button>
+    <button class="btn btn-sm btn-danger" onclick="clearAllReminders()" title="Clear all reminders">
+        <i class="fas fa-trash"></i>
+    </button>
+</div>
+
+<script>
+// ===== FILTER FUNCTION =====
+function filterByCategory(category, btn) {
+    // Update button styles
+    document.querySelectorAll('.btn-outline-primary').forEach(b => {
+        b.classList.remove('active');
+    });
+    if (btn) btn.classList.add('active');
+    
+    // Filter notifications
+    document.querySelectorAll('.notification-item').forEach(item => {
+        if (category === 'all' || item.dataset.category === category) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// ===== REMINDER FUNCTIONS =====
+function showReminderForm(id) {
+    document.getElementById('reminder-form-' + id).style.display = 'block';
+}
+
+function hideReminderForm(id) {
+    document.getElementById('reminder-form-' + id).style.display = 'none';
+}
+
+function setReminder(id) {
+    const time = document.getElementById('reminder-time-' + id).value;
+    const status = document.getElementById('reminder-status-' + id);
+    
+    if (!time) {
+        status.innerHTML = '<span class="text-danger">Select time</span>';
+        return;
+    }
+    
+    // Save to localStorage
+    let reminders = JSON.parse(localStorage.getItem('reminders') || '{}');
+    reminders[id] = time;
+    localStorage.setItem('reminders', JSON.stringify(reminders));
+    
+    status.innerHTML = '<span class="text-success">✓ Reminder set</span>';
+    hideReminderForm(id);
+}
+
+// ===== SEARCH FUNCTION =====
+document.getElementById('searchInput')?.addEventListener('input', function() {
+    const term = this.value.toLowerCase();
+    document.querySelectorAll('.notification-item').forEach(item => {
+        const title = item.dataset.title || '';
+        const msg = item.dataset.message || '';
+        item.style.display = (title.includes(term) || msg.includes(term)) ? 'block' : 'none';
+    });
+});
+
+// ===== LOAD SAVED REMINDERS =====
+window.onload = function() {
+    const saved = JSON.parse(localStorage.getItem('reminders') || '{}');
+    for (let id in saved) {
+        const status = document.getElementById('reminder-status-' + id);
+        if (status) {
+            status.innerHTML = '<span class="text-success">⏰ Reminder set</span>';
+        }
+    }
+};
+
+// ===== DEBUG FUNCTIONS =====
+function showAllReminders() {
+    console.log(JSON.parse(localStorage.getItem('reminders') || '{}'));
+}
+
+function clearAllReminders() {
+    if (confirm('Clear all reminders?')) {
+        localStorage.removeItem('reminders');
+        location.reload();
+    }
+}
+</script>
+{% endblock %}
