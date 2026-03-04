@@ -1,0 +1,119 @@
+<!-- templates/notifications/teacher_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Teacher Notifications{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-bell"></i> 
+        {% if current_filter == 'sent' %}
+            Sent Notifications
+        {% elif current_filter == 'received' %}
+            Received Notifications
+        {% elif current_filter == 'unread' %}
+            Unread Notifications
+        {% else %}
+            All Notifications
+        {% endif %}
+    </h2>
+    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<!-- Filter Tabs -->
+<div class="mb-4">
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link {% if current_filter == 'all' or not current_filter %}active{% endif %}" 
+               href="{% url 'notification_list' %}?filter=all">
+                All
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if current_filter == 'sent' %}active{% endif %}" 
+               href="{% url 'notification_list' %}?filter=sent">
+                Sent
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if current_filter == 'received' %}active{% endif %}" 
+               href="{% url 'notification_list' %}?filter=received">
+                Received
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if current_filter == 'unread' %}active{% endif %}" 
+               href="{% url 'notification_list' %}?filter=unread">
+                Unread
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Notifications List -->
+{% if notifications %}
+    <div class="list-group">
+        {% for item in notifications %}
+        <a href="{% url 'notification_detail' item.notification.id %}" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+                <div>
+                    <h5 class="mb-1">
+                        {{ item.notification.title }}
+                        {% if item.is_sent %}
+                            <span class="badge bg-success">Sent</span>
+                        {% else %}
+                            {% if not item.is_read %}
+                                <span class="badge bg-danger">New</span>
+                            {% endif %}
+                        {% endif %}
+                    </h5>
+                    <p class="mb-1">{{ item.notification.message|truncatechars:150 }}</p>
+                    <small>
+                        {% if item.is_sent %}
+                            <i class="fas fa-paper-plane"></i> You sent to students
+                        {% else %}
+                            <i class="fas fa-inbox"></i> From Principal
+                        {% endif %}
+                        <span class="ms-3"><i class="fas fa-clock"></i> {{ item.notification.created_at|timesince }} ago</span>
+                    </small>
+                </div>
+                <div class="text-end">
+                    <span class="badge category-badge category-{{ item.notification.category }}">
+                        {{ item.notification.get_category_display }}
+                    </span>
+                    <br>
+                    {% if not item.is_sent %}
+                        {% if item.is_read %}
+                            <small class="text-success"><i class="fas fa-check-circle"></i> Read</small>
+                        {% else %}
+                            <small class="text-warning"><i class="fas fa-circle"></i> Unread</small>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+        <h3 class="text-muted">No notifications found</h3>
+        <p>
+            {% if current_filter == 'sent' %}
+                You haven't sent any notifications yet.
+            {% elif current_filter == 'received' %}
+                No notifications received from Principal.
+            {% elif current_filter == 'unread' %}
+                No unread notifications.
+            {% else %}
+                There are no notifications to display.
+            {% endif %}
+        </p>
+        <a href="{% url 'dashboard' %}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

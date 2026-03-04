@@ -33,12 +33,56 @@
             color: #333;
         }
         
-        /* Modern Navbar */
+        /* ===== PAGE TRANSITION ANIMATION ===== */
+        .page-transition {
+            animation: pageFade 0.5s ease-in-out;
+        }
+        
+        @keyframes pageFade {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* ===== LOADING ANIMATION ===== */
+        .loader-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s, visibility 0.8s;
+        }
+        
+        .loader-hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Modern Navbar (Your Original) */
         .navbar-modern {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
             padding: 1rem 0;
+            animation: slideInDown 0.8s ease;
         }
         
         .navbar-brand {
@@ -47,6 +91,11 @@
             background: linear-gradient(45deg, #667eea, #764ba2);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-brand:hover {
+            transform: scale(1.1) rotate(2deg);
         }
         
         .nav-link {
@@ -66,9 +115,14 @@
         
         .nav-link i {
             margin-right: 8px;
+            transition: transform 0.3s ease;
         }
         
-        /* Modern Cards */
+        .nav-link:hover i {
+            transform: rotate(360deg);
+        }
+        
+        /* Modern Cards (Your Original) */
         .modern-card {
             background: white;
             border-radius: 20px;
@@ -78,6 +132,19 @@
             border: none;
             position: relative;
             overflow: hidden;
+            animation: cardFadeIn 0.8s ease;
+            animation-fill-mode: both;
+        }
+        
+        .modern-card:nth-child(1) { animation-delay: 0.1s; }
+        .modern-card:nth-child(2) { animation-delay: 0.2s; }
+        .modern-card:nth-child(3) { animation-delay: 0.3s; }
+        .modern-card:nth-child(4) { animation-delay: 0.4s; }
+        .modern-card:nth-child(5) { animation-delay: 0.5s; }
+        
+        @keyframes cardFadeIn {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
         
         .modern-card::before {
@@ -88,6 +155,8 @@
             right: 0;
             height: 5px;
             background: linear-gradient(45deg, #667eea, #764ba2);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
         }
         
         .modern-card:hover {
@@ -95,7 +164,11 @@
             box-shadow: 0 15px 50px rgba(102, 126, 234, 0.2);
         }
         
-        /* Modern Buttons */
+        .modern-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        /* Modern Buttons with Different Animations */
         .btn-modern {
             padding: 12px 30px;
             border-radius: 50px;
@@ -107,37 +180,76 @@
             overflow: hidden;
         }
         
-        .btn-modern::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        
-        .btn-modern:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-        
+        /* Animation 1: Slide Up */
         .btn-primary-modern {
             background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
         }
         
         .btn-primary-modern:hover {
-            background: linear-gradient(45deg, #764ba2, #667eea);
-            color: white;
-            transform: translateY(-2px);
+            transform: translateY(-3px);
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
         
-        /* Modern Alerts */
+        /* Animation 2: Pulse */
+        .btn-pulse {
+            background: #28a745;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        
+        .btn-pulse:hover {
+            animation: none;
+            transform: scale(1.05);
+        }
+        
+        /* Animation 3: Shake */
+        .btn-shake:hover {
+            animation: shake 0.5s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        /* Animation 4: Glow */
+        .btn-glow {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-glow:hover {
+            animation: glow 1s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(220, 53, 69, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(220, 53, 69, 0.8); }
+        }
+        
+        /* Animation 5: Bounce */
+        .btn-bounce:hover {
+            animation: bounce 0.5s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Animation 6: Rotate */
+        .btn-rotate:hover i {
+            animation: rotate 0.5s ease;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Modern Alerts (Your Original) */
         .alert-modern {
             border-radius: 15px;
             border: none;
@@ -156,7 +268,7 @@
             color: #721c24;
         }
         
-        /* Modern Badges */
+        /* Modern Badges (Your Original) */
         .badge-modern {
             padding: 8px 16px;
             border-radius: 50px;
@@ -165,6 +277,11 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .badge-modern:hover {
+            transform: scale(1.1);
         }
         
         .badge-academic { background: #e3f2fd; color: #1976d2; }
@@ -184,7 +301,7 @@
             100% { transform: scale(1); }
         }
         
-        /* Modern Table */
+        /* Modern Table (Your Original) */
         .table-modern {
             border-radius: 15px;
             overflow: hidden;
@@ -207,13 +324,14 @@
             transform: scale(1.01);
         }
         
-        /* Modern Footer */
+        /* Modern Footer (Your Original) */
         .footer-modern {
             text-align: center;
             padding: 30px 0;
             margin-top: 50px;
             color: #666;
             font-size: 0.9rem;
+            animation: fadeInUp 1s ease;
         }
         
         .footer-modern i {
@@ -222,12 +340,11 @@
         }
         
         @keyframes heartBeat {
-            0% { transform: scale(1); }
+            0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
         }
         
-        /* Loading Animation */
+        /* Loading Animation (Your Original) */
         .loader {
             width: 48px;
             height: 48px;
@@ -242,7 +359,7 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Scrollbar Styling */
+        /* Scrollbar Styling (Your Original) */
         ::-webkit-scrollbar {
             width: 10px;
         }
@@ -260,7 +377,7 @@
             background: linear-gradient(45deg, #764ba2, #667eea);
         }
         
-        /* Glass Morphism Effect */
+        /* Glass Morphism Effect (Your Original) */
         .glass-card {
             background: rgba(255, 255, 255, 0.25);
             backdrop-filter: blur(10px);
@@ -269,7 +386,7 @@
             padding: 30px;
         }
 
-        /* ===== BACK BUTTON STYLES ===== */
+        /* Back button styles (Your Original) */
         .back-button-container {
             margin-top: 15px;
             margin-bottom: 5px;
@@ -289,6 +406,7 @@
             box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
             text-decoration: none;
             font-size: 0.95rem;
+            animation: fadeInLeft 0.8s ease;
         }
         
         .back-btn:hover {
@@ -301,86 +419,228 @@
         .back-btn i {
             margin-right: 8px;
             font-size: 0.9rem;
+            transition: transform 0.3s ease;
         }
-        /* ===== END BACK BUTTON STYLES ===== */
+        
+        .back-btn:hover i {
+            transform: translateX(-5px);
+        }
+        
+        /* Keyframe Animations */
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Category Badge Styles */
+        .category-badge {
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .category-badge:hover {
+            transform: scale(1.1) rotate(2deg);
+        }
+        
+        .category-academic { background: #e3f2fd; color: #1976d2; }
+        .category-exam { background: #fff3e0; color: #f57c00; }
+        .category-event { background: #e8f5e9; color: #388e3c; }
+        .category-holiday { background: #f3e5f5; color: #8e24aa; }
+        .category-urgent { background: #ffebee; color: #d32f2f; animation: pulse 2s infinite; }
+        .category-general { background: #e0e0e0; color: #424242; }
+        
+        /* List Group Item Animation */
+        .list-group-item {
+            transition: all 0.3s ease;
+            border: none;
+            margin-bottom: 2px;
+            border-radius: 10px !important;
+            animation: fadeInRight 0.8s ease;
+            animation-fill-mode: both;
+        }
+        
+        .list-group-item:nth-child(1) { animation-delay: 0.1s; }
+        .list-group-item:nth-child(2) { animation-delay: 0.2s; }
+        .list-group-item:nth-child(3) { animation-delay: 0.3s; }
+        .list-group-item:nth-child(4) { animation-delay: 0.4s; }
+        .list-group-item:nth-child(5) { animation-delay: 0.5s; }
+        
+        .list-group-item:hover {
+            transform: translateX(10px);
+            box-shadow: -5px 5px 20px rgba(0,0,0,0.1);
+            background: linear-gradient(90deg, white, #f8f9fa);
+        }
+        
+        /* Page Transition */
+        .page-content {
+            animation: pageFade 0.5s ease-in-out;
+        }
+        
+        @keyframes pageFade {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Ripple Effect */
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(0);
+            animation: ripple 0.6s ease-out;
+            pointer-events: none;
+        }
+        
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        .btn, .back-btn, .btn-modern, .nav-link {
+            position: relative;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
-    <!-- Modern Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-modern">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'dashboard' %}">
-                <i class="fas fa-bell"></i> NotifyHub
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                {% if user.is_authenticated %}
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'dashboard' %}">
-                            <i class="fas fa-chart-pie"></i> Dashboard
-                        </a>
-                    </li>
-                    
-                    {% if user.can_send_notifications %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'notification_create' %}">
-                            <i class="fas fa-plus-circle"></i> New
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'draft_list' %}">
-                            <i class="fas fa-pen"></i> Drafts
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'notification_dashboard' %}">
-                            <i class="fas fa-chart-line"></i> Analytics
-                        </a>
-                    </li>
-                    {% endif %}
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'notification_list' %}">
-                            <i class="fas fa-list"></i> All
-                        </a>
-                    </li>
-                    
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle"></i> {{ user.username }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{% url 'dashboard' %}">
-                                <i class="fas fa-user"></i> Profile
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'logout' %}">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </a></li>
-                        </ul>
-                    </li>
-                </ul>
-                {% endif %}
-            </div>
-        </div>
-    </nav>
+    <!-- Loader -->
+    <div class="loader-wrapper" id="loader">
+        <div class="loader"></div>
+    </div>
 
-    <!-- ===== GLOBAL BACK BUTTON ===== -->
-    <!-- Shows on all pages except home and login -->
+   <!-- Modern Navbar -->
+<nav class="navbar navbar-expand-lg navbar-modern">
+    <div class="container">
+        <!-- CHANGED: This now goes to home page for all users -->
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <i class="fas fa-bell"></i> NotifyHub
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            {% if user.is_authenticated %}
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'dashboard' %}">
+                        <i class="fas fa-chart-pie"></i> Dashboard
+                    </a>
+                </li>
+                
+                {% if user.can_send_notifications %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'notification_create' %}">
+                        <i class="fas fa-plus-circle"></i> New
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'draft_list' %}">
+                        <i class="fas fa-pen"></i> Drafts
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'notification_dashboard' %}">
+                        <i class="fas fa-chart-line"></i> Analytics
+                    </a>
+                </li>
+                {% endif %}
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'notification_list' %}">
+                        <i class="fas fa-list"></i> All
+                    </a>
+                </li>
+                
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i> {{ user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'dashboard' %}">
+                            <i class="fas fa-user"></i> Profile
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a></li>
+                    </ul>
+                </li>
+            </ul>
+            {% else %}
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'student_notifications' %}">
+                        <i class="fas fa-eye"></i> Student Board
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                </li>
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+    <!-- Back Button -->
     {% if request.path != '/' and request.path != '/accounts/login/' %}
     <div class="container back-button-container">
         <button onclick="history.back()" class="back-btn">
-            <i class="fas fa-arrow-left"></i> Back to Previous Page
+            <i class="fas fa-arrow-left"></i> Back
         </button>
     </div>
     {% endif %}
-    <!-- ===== END GLOBAL BACK BUTTON ===== -->
 
-    <!-- Main Content -->
-    <div class="container mt-4">
+    <!-- Main Content with Page Transition -->
+    <div class="container mt-4 page-content">
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-modern alert-{{ message.tags }} animate__animated animate__fadeIn">
@@ -394,7 +654,7 @@
         {% endblock %}
     </div>
 
-    <!-- Modern Footer -->
+    <!-- Modern Footer (Your Original) -->
     <footer class="footer-modern">
         <p>
             <i class="fas fa-heart"></i> College Notification System 
@@ -408,9 +668,27 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <script>
-        // Add loading animation
+        // Hide loader when page is loaded
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loader').classList.add('loader-hidden');
+            }, 500);
+        });
+        
+        // Add loading animation to cards
         $(document).ready(function() {
             $('.modern-card').addClass('animate__animated animate__fadeInUp');
+            
+            // Ripple effect for buttons
+            $('.btn, .back-btn, .btn-modern, .nav-link').click(function(e) {
+                let ripple = $('<span class="ripple-effect"></span>');
+                $(this).append(ripple);
+                ripple.css({
+                    left: e.pageX - $(this).offset().left,
+                    top: e.pageY - $(this).offset().top
+                });
+                setTimeout(() => ripple.remove(), 600);
+            });
         });
         
         // Tooltip initialization
@@ -418,6 +696,42 @@
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl)
         });
+        
+        // Different button animations based on class
+        $('.btn-primary-modern').hover(
+            function() { $(this).addClass('animate__animated animate__pulse'); },
+            function() { $(this).removeClass('animate__animated animate__pulse'); }
+        );
+        
+        $('.btn-pulse').hover(
+            function() { $(this).addClass('animate__animated animate__heartBeat'); },
+            function() { $(this).removeClass('animate__animated animate__heartBeat'); }
+        );
+        
+        $('.btn-shake').hover(
+            function() { $(this).addClass('animate__animated animate__shakeX'); },
+            function() { $(this).removeClass('animate__animated animate__shakeX'); }
+        );
+        
+        $('.btn-glow').hover(
+            function() { $(this).addClass('animate__animated animate__flash'); },
+            function() { $(this).removeClass('animate__animated animate__flash'); }
+        );
+        
+        $('.btn-bounce').hover(
+            function() { $(this).addClass('animate__animated animate__bounce'); },
+            function() { $(this).removeClass('animate__animated animate__bounce'); }
+        );
+        
+        // Add hover animation to category badges
+        $('.category-badge').hover(
+            function() {
+                $(this).addClass('animate__animated animate__pulse');
+            },
+            function() {
+                $(this).removeClass('animate__animated animate__pulse');
+            }
+        );
     </script>
     
     {% block extra_js %}{% endblock %}
