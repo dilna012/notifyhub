@@ -12,6 +12,8 @@ class NotificationAdmin(admin.ModelAdmin):
     list_filter = ('is_draft', 'sender__role', 'created_at')
     search_fields = ('title', 'message')
     inlines = [ReadStatusInline]
+    list_display = ('title', 'sender', 'is_draft', 'event_date', 'created_at')
+    change_list_template = "admin/notifications_change_list.html"
     
     def get_read_count_display(self, obj):
         return obj.get_read_count()
