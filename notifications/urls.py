@@ -11,4 +11,5 @@ urlpatterns = [
     path('student/', views.student_notifications, name='student_notifications'),
     path('student/set-reminder/<int:pk>/', views.set_student_reminder, name='set_student_reminder'),
     path('dashboard/', views.notification_dashboard, name='notification_dashboard'),
+    path('<int:pk>/delete/', views.notification_delete, name='notification_delete'),
 ]

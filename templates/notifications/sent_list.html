@@ -10,7 +10,7 @@
     </div>
     <div class="col text-end">
         <a href="{% url 'notification_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> New Notification
+            <i class="fas fa-plus-circle"></i> New Notification
         </a>
     </div>
 </div>
@@ -26,7 +26,7 @@
                 {% if notification.event_date %}
                 <p class="card-text">
                     <small class="text-muted">
-                        <i class="bi bi-calendar-event"></i> 
+                        <i class="fas fa-calendar-alt"></i> 
                         Event: {{ notification.event_date|date:"M d, Y h:i A" }}
                     </small>
                 </p>
@@ -38,11 +38,16 @@
                     </small>
                     <div>
                         <a href="{% url 'notification_detail' notification.id %}" class="btn btn-sm btn-outline-primary">
-                            View
+                            <i class="fas fa-eye"></i> View
                         </a>
                         <a href="{% url 'notification_stats' notification.id %}" class="btn btn-sm btn-outline-info">
-                            <i class="bi bi-graph-up"></i> Stats
+                            <i class="fas fa-chart-bar"></i> Stats
                         </a>
+                        <!-- DELETE BUTTON - Only appears for the sender -->
+                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                onclick="confirmDelete('{{ notification.id }}', '{{ notification.title|escapejs }}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
                     </div>
                 </div>
                 
@@ -62,4 +67,13 @@
     </div>
     {% endfor %}
 </div>
+
+<!-- Delete Confirmation Script -->
+<script>
+function confirmDelete(notificationId, notificationTitle) {
+    if (confirm(`Are you sure you want to delete "${notificationTitle}"?\n\nThis action cannot be undone!`)) {
+        window.location.href = `/notifications/${notificationId}/delete/`;
+    }
+}
+</script>
 {% endblock %}

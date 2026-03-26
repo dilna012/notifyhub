@@ -15,11 +15,33 @@ from accounts.models import User
 from .forms import NotificationForm
 from accounts.decorators import sender_required, role_required
 
-# ===== HOME PAGE VIEW =====
 def home_page(request):
     """Home page for the website"""
-    return render(request, 'home.html')
-
+    
+    # Get REAL statistics from database
+    total_notifications = Notification.objects.filter(is_draft=False).count()
+    total_students = User.objects.filter(role='student', is_active=True).count()
+    total_teachers = User.objects.filter(role='teacher', is_active=True).count()
+    total_staff = User.objects.filter(role='staff', is_active=True).count()
+    total_users = total_teachers + total_staff
+    
+    # Calculate read rate (percentage of read notifications)
+    total_read_statuses = ReadStatus.objects.count()
+    total_read = ReadStatus.objects.filter(is_read=True).count()
+    
+    if total_read_statuses > 0:
+        read_rate = int((total_read / total_read_statuses) * 100)
+    else:
+        read_rate = 0
+    
+    context = {
+        'total_notifications': total_notifications,
+        'total_students': total_students,
+        'total_users': total_users,
+        'read_rate': read_rate,
+    }
+    
+    return render(request, 'home.html', context)
 # ===== STUDENT PUBLIC VIEWS =====
 def student_notifications(request):
     """Public page for students to view all notifications"""
@@ -432,6 +454,22 @@ def notification_dashboard(request):
     }
     
     return render(request, 'notifications/dashboard_stats.html', context)
+# ===== NOTIFICATION DELETE VIEW =====
+@login_required
+def notification_delete(request, pk):
+    """Delete a notification - only the sender can delete"""
+    notification = get_object_or_404(Notification, pk=pk)
+    
+    # Check if the logged-in user is the sender
+    if request.user == notification.sender:
+        notification_title = notification.title
+        notification.delete()
+        messages.success(request, f'Notification "{notification_title}" has been deleted successfully.')
+    else:
+        messages.error(request, 'You can only delete your own notifications.')
+    
+    # Redirect back to the page they came from
+    return redirect('notification_list')
 
 # ===== EXPORT STATS VIEW =====
 @login_required
