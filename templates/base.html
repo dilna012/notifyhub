@@ -594,7 +594,8 @@
                 
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'notification_list' %}">
-                        <i class="fas fa-list"></i> All
+                        <i class="fas fa-bell"></i> Notifications 
+                        (<span id="unread-count">0</span>)
                     </a>
                 </li>
                 
@@ -732,6 +733,24 @@
                 $(this).removeClass('animate__animated animate__pulse');
             }
         );
+        function updateUnreadCount() {
+    fetch('/unread-count/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('unread-count').innerText = data.count;
+        });
+    }
+    // Run every 3 seconds
+    setInterval(updateUnreadCount, 1000);
+
+    // Run immediately when page loads
+    updateUnreadCount();
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+        
     </script>
     
     {% block extra_js %}{% endblock %}

@@ -14,6 +14,8 @@ from .models import Notification, ReadStatus
 from accounts.models import User
 from .forms import NotificationForm
 from accounts.decorators import sender_required, role_required
+from django.http import JsonResponse
+from .models import Notification
 
 def home_page(request):
     """Home page for the website"""
@@ -122,7 +124,7 @@ def notification_list(request):
         else:  # 'all' or any other
             all_notifications = (sent_notifications | received_notifications).distinct()
         
-        all_notifications = all_notifications.order_by('-created_at')
+        all_notifications = all_notifications.order_by('-published_at', '-updated_at', '-created_at')
         
         # Get read status for received notifications
         notifications_with_status = []
@@ -495,3 +497,87 @@ def export_stats(request, pk):
         ])
     
     return response
+
+def unread_count(request):
+    if request.user.is_authenticated:
+        count = Notification.objects.filter(
+            user=request.user,
+            is_read=False
+        ).count()
+        return JsonResponse({'count': count})
+    return JsonResponse({'count': 0})
+
+@login_required
+@sender_required
+def edit_draft(request, pk):
+    notification = get_object_or_404(
+        Notification,
+        pk=pk,
+        sender=request.user
+    )
+
+    if request.method == 'POST':
+        form = NotificationForm(request.POST, instance=notification, user=request.user)
+
+        if form.is_valid():
+            notification = form.save(commit=False)
+            from django.utils import timezone
+
+            if 'draft' in request.POST:
+                notification.is_draft = True
+                notification.updated_at = timezone.now()
+                notification.save()
+
+               # In notifications/views.py — replace set_reminder view
+
+# In notifications/views.py — replace set_reminder view
+
+@login_required
+def set_reminder(request, pk):
+    """Users can set reminders for notifications"""
+    if request.method == 'POST':
+        notification = get_object_or_404(Notification, pk=pk)
+        read_status, created = ReadStatus.objects.get_or_create(
+            user=request.user,
+            notification=notification
+        )
+
+        reminder_time = request.POST.get('reminder_time')
+        if reminder_time:
+            from django.utils.dateparse import parse_datetime
+            parsed_time = parse_datetime(reminder_time)
+            
+            if parsed_time:
+                read_status.reminder_time = parsed_time
+                read_status.reminder_sent = False  # reset if rescheduling
+                read_status.save()
+                messages.success(request, f'Reminder set for {parsed_time.strftime("%b %d, %Y at %I:%M %p")}!')
+            else:
+                messages.error(request, 'Invalid date/time format.')
+
+    return redirect('notification_detail', pk=pk)
+
+
+    
+@login_required
+@sender_required
+def publish_draft(request, pk):
+    draft = get_object_or_404(
+        Notification,
+        pk=pk,
+        sender=request.user,
+        is_draft=True
+    )
+
+    if request.method == "POST":
+        from django.utils import timezone
+
+        draft.is_draft = False
+        draft.published_at = timezone.now()
+        draft.save()
+
+        messages.success(request, "Notification published successfully!")
+        return redirect("notification_list")
+
+    return redirect("draft_list")
+    

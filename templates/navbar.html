@@ -21,14 +21,8 @@
                         <i class="bi bi-speedometer2"></i> Dashboard
                     </a>
                 </li>
-                {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'dashboard' %}">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                </li>
                 
-                {% if user.can_send_notifications %}
+                {% if user.role == 'teacher' or user.role == 'principal' %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'notification_create' %}">
                         <i class="bi bi-plus-circle"></i> New
@@ -43,7 +37,8 @@
                 
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'notification_list' %}">
-                        <i class="bi bi-list"></i> All
+                        <i class="bi bi-bell"></i> Notifications 
+                        (<span id="unread-count">0</span>)
                     </a>
                 </li>
                 

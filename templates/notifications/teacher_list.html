@@ -17,9 +17,9 @@
             All Notifications
         {% endif %}
     </h2>
-    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+    <!--<a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
         <i class="fas fa-arrow-left"></i> Back to Dashboard
-    </a>
+    </a>-->
 </div>
 
 <!-- Filter Tabs -->
@@ -81,7 +81,7 @@
                         {% else %}
                             <i class="fas fa-inbox"></i> From Principal
                         {% endif %}
-                        <span class="ms-3"><i class="fas fa-clock"></i> {{ item.notification.created_at|timesince }} ago</span>
+                        <span class="ms-3"><i class="fas fa-clock"></i> {{ item.notification.published_at|timesince }} ago</span>
                     </small>
                 </div>
                 <div class="text-end">
@@ -120,9 +120,9 @@
                 There are no notifications to display.
             {% endif %}
         </p>
-        <a href="{% url 'dashboard' %}" class="btn btn-primary">
+        <!--<a href="{% url 'dashboard' %}" class="btn btn-primary">
             <i class="fas fa-arrow-left"></i> Back to Dashboard
-        </a>
+        </a>-->
     </div>
 {% endif %}
 

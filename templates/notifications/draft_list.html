@@ -40,12 +40,16 @@
                         Last updated: {{ draft.updated_at|timesince }} ago
                     </small>
                     <div>
-                        <a href="{% url 'notification_detail' draft.id %}" class="btn btn-sm btn-outline-primary">
+                        <a href="{% url 'edit_draft' draft.id %}" class="btn btn-sm btn-outline-primary">
                             Edit
                         </a>
-                        <a href="{% url 'notification_create' %}?draft={{ draft.id }}" class="btn btn-sm btn-outline-success">
-                            Publish
-                        </a>
+                        
+                        <form method="POST" action="{% url 'publish_draft' draft.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                Publish
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

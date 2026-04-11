@@ -41,9 +41,9 @@
                     </h5>
                     <small class="text-muted">
                         {% if user.role in 'student,staff' %}
-                            {{ item.notification.created_at|date:"M d, Y" }}
+                            {{ item.notification.display_time|date:"M d, Y h:i A" }}
                         {% else %}
-                            {{ item.created_at|date:"M d, Y" }}
+                            {{ item.display_time|date:"M d, Y h:i A" }}
                         {% endif %}
                     </small>
                 </div>

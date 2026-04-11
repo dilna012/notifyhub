@@ -104,7 +104,7 @@
                             {{ notification.get_category_display }}
                         </span>
                         <br>
-                        <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                        <small class="text-muted">published at {{ notification.display_time }} ago</small>
                     </div>
                 </div>
             </a>
@@ -228,7 +228,7 @@
                             {% else %}
                                 Received from {{ item.notification.sender.get_role_display }}
                             {% endif %}
-                            <span class="ms-3"><i class="fas fa-clock"></i> {{ item.notification.created_at|timesince }} ago</span>
+                            <span class="ms-3"><i class="fas fa-clock"></i>published at {{ item.notification.display_time}}</span>
                         </small>
                     </div>
                     <div class="text-end">
@@ -279,7 +279,7 @@
                     </h6>
                     <p class="mb-1 text-muted">{{ item.notification.message|truncatechars:100 }}</p>
                     <small>
-                        <i class="fas fa-clock"></i> {{ item.notification.created_at|timesince }} ago
+                        <i class="fas fa-clock"></i> published at {{ item.notification.display_time }}
                     </small>
                 </div>
                 <div class="text-end">
@@ -361,7 +361,7 @@
                         <p class="mb-1 text-muted">{{ item.notification.message|truncatechars:100 }}</p>
                         <small>
                             <i class="fas fa-user"></i> {{ item.notification.sender.get_role_display }}
-                            <span class="ms-3"><i class="fas fa-clock"></i> {{ item.notification.created_at|timesince }} ago</span>
+                            <span class="ms-3"><i class="fas fa-clock"></i> published at{{ item.notification.display_time }} </span>
                         </small>
                     </div>
                     <div class="text-end">
