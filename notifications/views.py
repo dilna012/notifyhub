@@ -84,91 +84,95 @@ def set_student_reminder(request, pk):
 @login_required
 def notification_list(request):
     """View for users to see notifications"""
+
     if request.user.role == 'principal':
-        # Principal sees all notifications they sent
         notifications = Notification.objects.filter(
-            sender=request.user, 
+            sender=request.user,
             is_draft=False
         ).order_by('-created_at')
+
+        notifications_with_status = []
+        for notification in notifications:
+            read_status, created = ReadStatus.objects.get_or_create(
+                user=request.user,
+                notification=notification
+            )
+            notifications_with_status.append({
+                'notification': notification,
+                'reminder_time': read_status.reminder_time,
+                'reminder_sent': read_status.reminder_sent,
+            })
+
         return render(request, 'notifications/sent_list.html', {
-            'notifications': notifications
+            'notifications': notifications_with_status
         })
-    
+
     elif request.user.role == 'teacher':
-        # ===== UPDATED: Teacher sees both sent and received with filter support =====
-        # 1. Notifications they sent (to students)
+        # Notifications sent by teacher
         sent_notifications = Notification.objects.filter(
-            sender=request.user, 
+            sender=request.user,
             is_draft=False
         )
-        
-        # 2. Notifications they received (from Principal)
+
+        # Notifications received from principal
         received_notifications = Notification.objects.filter(
             is_draft=False,
             send_to_teachers=True
         ).exclude(sender=request.user)
-        
-        # Get filter from URL
+
         filter_type = request.GET.get('filter', 'all')
-        
-        # Apply filter
+
         if filter_type == 'sent':
             all_notifications = sent_notifications
         elif filter_type == 'received':
             all_notifications = received_notifications
         elif filter_type == 'unread':
-            # Get unread received notifications
             all_notifications = received_notifications
-            # We'll filter by read status later
-        else:  # 'all' or any other
+        else:
             all_notifications = (sent_notifications | received_notifications).distinct()
-        
+
         all_notifications = all_notifications.order_by('-published_at', '-updated_at', '-created_at')
-        
-        # Get read status for received notifications
+
         notifications_with_status = []
         for notification in all_notifications:
             if notification.sender == request.user:
-                # Sent notifications
                 notifications_with_status.append({
                     'notification': notification,
                     'is_read': None,
                     'read_at': None,
                     'reminder_time': None,
+                    'reminder_sent': False,
                     'is_sent': True
                 })
             else:
-                # Received notifications
                 read_status, created = ReadStatus.objects.get_or_create(
                     user=request.user,
                     notification=notification
                 )
-                
-                # For unread filter, only include unread notifications
+
                 if filter_type == 'unread' and read_status.is_read:
                     continue
-                    
+
                 notifications_with_status.append({
                     'notification': notification,
                     'is_read': read_status.is_read,
                     'read_at': read_status.read_at,
                     'reminder_time': read_status.reminder_time,
+                    'reminder_sent': read_status.reminder_sent,
                     'is_sent': False
                 })
-        
+
         return render(request, 'notifications/teacher_list.html', {
             'notifications': notifications_with_status,
             'current_filter': filter_type
         })
-    
+
     elif request.user.role == 'staff':
-        # Staff see notifications meant for them
         staff_notifications = Notification.objects.filter(
             is_draft=False,
             send_to_staff=True
         ).order_by('-created_at')
-        
-        # Get or create read status for each notification
+
         notifications_with_status = []
         for notification in staff_notifications:
             read_status, created = ReadStatus.objects.get_or_create(
@@ -179,15 +183,15 @@ def notification_list(request):
                 'notification': notification,
                 'is_read': read_status.is_read,
                 'read_at': read_status.read_at,
-                'reminder_time': read_status.reminder_time
+                'reminder_time': read_status.reminder_time,
+                'reminder_sent': read_status.reminder_sent,
             })
-        
+
         return render(request, 'notifications/notification_list.html', {
             'notifications': notifications_with_status
         })
-    
+
     else:
-        # Default for other roles
         return render(request, 'notifications/notification_list.html', {
             'notifications': []
         })
@@ -516,6 +520,9 @@ def edit_draft(request, pk):
 @login_required
 def set_reminder(request, pk):
     """Users can set reminders for notifications"""
+    if not request.user.email:
+        messages.error(request, 'Please add your email in your profile before setting reminders.')
+        return redirect('profile')
     if request.method == 'POST':
         notification = get_object_or_404(Notification, pk=pk)
         read_status, created = ReadStatus.objects.get_or_create(

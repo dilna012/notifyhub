@@ -163,3 +163,29 @@ def dashboard(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+# accounts/views.py
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.shortcuts import render, redirect
+
+from .forms import ProfileForm
+
+@login_required
+def profile_view(request):
+    return render(request, 'accounts/profile.html', {
+        'user_obj': request.user
+    })  
+
+@login_required
+def edit_profile_view(request):
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=request.user)  # ✅ important
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully.')
+            return redirect('profile')
+    else:
+        form = ProfileForm(instance=request.user)
+
+    return render(request, 'accounts/edit_profile.html', {'form': form})
