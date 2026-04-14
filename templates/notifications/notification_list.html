@@ -1,4 +1,3 @@
-<!-- templates/notifications/notification_list.html -->
 {% extends 'base.html' %}
 
 {% block title %}Notifications{% endblock %}
@@ -7,13 +6,14 @@
 <div class="row mb-4">
     <div class="col">
         <h2>
-            {% if user.role in 'principal,teacher' %}
+            {% if user.role == 'principal' or user.role == 'teacher' %}
                 Sent Notifications
             {% else %}
                 All Notifications
             {% endif %}
         </h2>
     </div>
+
     {% if user.can_send_notifications %}
     <div class="col text-end">
         <a href="{% url 'notification_create' %}" class="btn btn-primary">
@@ -26,73 +26,77 @@
 <div class="row">
     {% for item in notifications %}
     <div class="col-md-6 mb-3">
-        <div class="card {% if not item.is_read %}border-primary{% endif %}">
+        <div class="card {% if item.is_read == False %}border-primary{% endif %}">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                     <h5 class="card-title">
-                        {% if user.role in 'student,staff' %}
-                            {{ item.notification.title }}
-                            {% if not item.is_read %}
-                                <span class="badge bg-danger">New</span>
-                            {% endif %}
-                        {% else %}
-                            {{ item.title }}
+                        {{ item.notification.title }}
+
+                        {% if item.is_pinned %}
+                            <span class="badge bg-warning text-dark ms-2">
+                                <i class="fas fa-thumbtack"></i> Pinned
+                            </span>
+                        {% endif %}
+
+                        {% if item.is_read == False %}
+                            <span class="badge bg-danger">New</span>
                         {% endif %}
                     </h5>
+
                     <small class="text-muted">
-                        {% if user.role in 'student,staff' %}
-                            {{ item.notification.display_time|date:"M d, Y h:i A" }}
+                        {% if item.notification.published_at %}
+                            {{ item.notification.published_at|date:"M d, Y h:i A" }}
                         {% else %}
-                            {{ item.display_time|date:"M d, Y h:i A" }}
+                            {{ item.notification.created_at|date:"M d, Y h:i A" }}
                         {% endif %}
                     </small>
                 </div>
-                
+
                 <p class="card-text">
-                    {% if user.role in 'student,staff' %}
-                        {{ item.notification.message|truncatechars:150 }}
-                    {% else %}
-                        {{ item.message|truncatechars:150 }}
-                    {% endif %}
+                    {{ item.notification.message|truncatechars:150 }}
                 </p>
-                
-                {% if user.role in 'student,staff' %}
-                    {% if item.notification.event_date %}
-                    <p class="card-text">
-                        <small class="text-muted">
-                            <i class="bi bi-calendar-event"></i> 
-                            Event: {{ item.notification.event_date|date:"M d, Y h:i A" }}
-                        </small>
-                    </p>
-                    {% endif %}
-                    
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="badge bg-info">{{ item.notification.sender.get_role_display }}</span>
-                        <div>
-                            {% if item.reminder_time %}
-                                <span class="badge bg-warning" title="Reminder set">
-                                    <i class="bi bi-alarm"></i>
-                                </span>
-                            {% endif %}
-                            <a href="{% url 'notification_detail' item.notification.id %}" class="btn btn-sm btn-outline-primary">
-                                Read More
-                            </a>
-                        </div>
+
+                {% if item.notification.event_date %}
+                <p class="card-text">
+                    <small class="text-muted">
+                        <i class="bi bi-calendar-event"></i>
+                        Event: {{ item.notification.event_date|date:"M d, Y h:i A" }}
+                    </small>
+                </p>
+                {% endif %}
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-info">
+                        {{ item.notification.sender.get_role_display }}
+                    </span>
+
+                    <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                        {% if item.reminder_time %}
+                            <span class="badge bg-warning" title="Reminder set">
+                                <i class="bi bi-alarm"></i>
+                            </span>
+                        {% endif %}
+
+                        <a href="{% url 'notification_detail' item.notification.id %}" class="btn btn-sm btn-outline-primary">
+                            Read More
+                        </a>
+
+                        <form method="POST" action="{% url 'toggle_pin_notification' item.notification.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-warning">
+                                <i class="fas fa-thumbtack"></i>
+                                {% if item.is_pinned %}Unpin{% else %}Pin{% endif %}
+                            </button>
+                        </form>
                     </div>
-                {% else %}
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="badge bg-success">Read: {{ item.get_read_count }}</span>
-                            <span class="badge bg-secondary">Total: {{ item.get_total_students }}</span>
-                        </div>
-                        <div>
-                            <a href="{% url 'notification_detail' item.id %}" class="btn btn-sm btn-outline-primary">
-                                View
-                            </a>
-                            <a href="{% url 'notification_stats' item.id %}" class="btn btn-sm btn-outline-info">
-                                <i class="bi bi-graph-up"></i>
-                            </a>
-                        </div>
+                </div>
+
+                {% if item.reminder_time %}
+                    <div class="alert alert-info py-2 px-3 mt-3 mb-0">
+                        <small>
+                            <i class="fas fa-clock"></i>
+                            Reminder set for {{ item.reminder_time|date:"M d, Y h:i A" }}
+                        </small>
                     </div>
                 {% endif %}
             </div>

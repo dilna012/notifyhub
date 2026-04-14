@@ -85,9 +85,17 @@ class ReadStatus(models.Model):
     reminder_time = models.DateTimeField(null=True, blank=True)
     reminder_sent = models.BooleanField(default=False)
     reminder_sent_at = models.DateTimeField(null=True, blank=True)
+    is_pinned = models.BooleanField(default=False)
+    pinned_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = ['user', 'notification']
 
     def __str__(self):
         return f"{self.user.username} - {self.notification.title}: {'Read' if self.is_read else 'Unread'}"
+
+    def mark_as_read(self):
+        if not self.is_read:
+            self.is_read = True
+            self.read_at = timezone.now()
+            self.save()

@@ -17,9 +17,18 @@
 <div class="row">
     {% for item in notifications %}
     <div class="col-md-6 mb-3">
-        <div class="card">
+        <div class="card {% if item.is_pinned %}border-warning{% endif %}">
             <div class="card-body">
-                <h5 class="card-title">{{ item.notification.title }}</h5>
+                <h5 class="card-title">
+                    {{ item.notification.title }}
+
+                    {% if item.is_pinned %}
+                        <span class="badge bg-warning text-dark ms-2">
+                            <i class="fas fa-thumbtack"></i> Pinned
+                        </span>
+                    {% endif %}
+                </h5>
+
                 <p class="card-text">{{ item.notification.message|truncatechars:150 }}</p>
 
                 {% if item.notification.event_date %}
@@ -54,43 +63,47 @@
                     <span class="badge bg-secondary">Total: {{ item.notification.get_total_students }}</span>
                 </div>
 
-                <div class="mt-3">
-                    {% if item.reminder_time %}
-                        <div class="alert alert-info py-2 px-3 mb-2">
-                            <small>
-                                <i class="fas fa-clock"></i>
-                                Reminder set for {{ item.reminder_time|date:"M d, Y h:i A" }}
-                            </small>
-                        </div>
-                    {% endif %}
-
-                    {% if item.reminder_sent %}
-                        <div class="alert alert-success py-2 px-3 mb-2">
-                            <small>
-                                <i class="fas fa-check-circle"></i>
-                                Reminder email sent
-                            </small>
-                        </div>
-                    {% endif %}
-
-                    <form method="POST" action="{% url 'set_reminder' item.notification.id %}" class="row g-2">
+                <div class="mt-3 d-flex gap-2 flex-wrap">
+                    <form method="POST" action="{% url 'toggle_pin_notification' item.notification.id %}">
                         {% csrf_token %}
-                        <div class="col-md-8">
-                            <input
-                                type="datetime-local"
-                                name="reminder_time"
-                                class="form-control form-control-sm"
-                                value="{{ item.reminder_time|date:'Y-m-d\\TH:i' }}"
-                                required
-                            >
-                        </div>
-                        <div class="col-md-4">
-                            <button type="submit" class="btn btn-warning btn-sm w-100">
-                                {% if item.reminder_time %}Update{% else %}Set{% endif %} Reminder
-                            </button>
-                        </div>
+                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                            <i class="fas fa-thumbtack"></i>
+                            {% if item.is_pinned %}Unpin{% else %}Pin{% endif %}
+                        </button>
+                    </form>
+
+                    <form method="POST" action="{% url 'set_reminder' item.notification.id %}" class="d-flex gap-2 flex-wrap">
+                        {% csrf_token %}
+                        <input
+                            type="datetime-local"
+                            name="reminder_time"
+                            class="form-control form-control-sm"
+                            value="{{ item.reminder_time|date:'Y-m-d\\TH:i' }}"
+                            required
+                        >
+                        <button type="submit" class="btn btn-warning btn-sm">
+                            {% if item.reminder_time %}Update{% else %}Set{% endif %} Reminder
+                        </button>
                     </form>
                 </div>
+
+                {% if item.reminder_time %}
+                    <div class="alert alert-info py-2 px-3 mt-2 mb-0">
+                        <small>
+                            <i class="fas fa-clock"></i>
+                            Reminder set for {{ item.reminder_time|date:"M d, Y h:i A" }}
+                        </small>
+                    </div>
+                {% endif %}
+
+                {% if item.reminder_sent %}
+                    <div class="alert alert-success py-2 px-3 mt-2 mb-0">
+                        <small>
+                            <i class="fas fa-check-circle"></i>
+                            Reminder email sent
+                        </small>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

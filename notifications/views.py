@@ -101,20 +101,24 @@ def notification_list(request):
                 'notification': notification,
                 'reminder_time': read_status.reminder_time,
                 'reminder_sent': read_status.reminder_sent,
+                'is_pinned': read_status.is_pinned,
+                'pinned_at': read_status.pinned_at,
             })
+
+        pinned = [item for item in notifications_with_status if item['is_pinned']]
+        others = [item for item in notifications_with_status if not item['is_pinned']]
+        notifications_with_status = pinned + others
 
         return render(request, 'notifications/sent_list.html', {
             'notifications': notifications_with_status
         })
 
     elif request.user.role == 'teacher':
-        # Notifications sent by teacher
         sent_notifications = Notification.objects.filter(
             sender=request.user,
             is_draft=False
         )
 
-        # Notifications received from principal
         received_notifications = Notification.objects.filter(
             is_draft=False,
             send_to_teachers=True
@@ -135,21 +139,23 @@ def notification_list(request):
 
         notifications_with_status = []
         for notification in all_notifications:
+            read_status, created = ReadStatus.objects.get_or_create(
+                user=request.user,
+                notification=notification
+            )
+
             if notification.sender == request.user:
                 notifications_with_status.append({
                     'notification': notification,
                     'is_read': None,
                     'read_at': None,
-                    'reminder_time': None,
-                    'reminder_sent': False,
+                    'reminder_time': read_status.reminder_time,
+                    'reminder_sent': read_status.reminder_sent,
+                    'is_pinned': read_status.is_pinned,
+                    'pinned_at': read_status.pinned_at,
                     'is_sent': True
                 })
             else:
-                read_status, created = ReadStatus.objects.get_or_create(
-                    user=request.user,
-                    notification=notification
-                )
-
                 if filter_type == 'unread' and read_status.is_read:
                     continue
 
@@ -159,8 +165,14 @@ def notification_list(request):
                     'read_at': read_status.read_at,
                     'reminder_time': read_status.reminder_time,
                     'reminder_sent': read_status.reminder_sent,
+                    'is_pinned': read_status.is_pinned,
+                    'pinned_at': read_status.pinned_at,
                     'is_sent': False
                 })
+
+        pinned = [item for item in notifications_with_status if item['is_pinned']]
+        others = [item for item in notifications_with_status if not item['is_pinned']]
+        notifications_with_status = pinned + others
 
         return render(request, 'notifications/teacher_list.html', {
             'notifications': notifications_with_status,
@@ -185,7 +197,13 @@ def notification_list(request):
                 'read_at': read_status.read_at,
                 'reminder_time': read_status.reminder_time,
                 'reminder_sent': read_status.reminder_sent,
+                'is_pinned': read_status.is_pinned,
+                'pinned_at': read_status.pinned_at,
             })
+
+        pinned = [item for item in notifications_with_status if item['is_pinned']]
+        others = [item for item in notifications_with_status if not item['is_pinned']]
+        notifications_with_status = pinned + others
 
         return render(request, 'notifications/notification_list.html', {
             'notifications': notifications_with_status
@@ -195,7 +213,7 @@ def notification_list(request):
         return render(request, 'notifications/notification_list.html', {
             'notifications': []
         })
-
+        
 # ===== NOTIFICATION CREATE VIEW =====
 @login_required
 @sender_required
@@ -589,4 +607,24 @@ def publish_draft(request, pk):
         return redirect("notification_list")
 
     return redirect("draft_list")
+
+@login_required
+def toggle_pin_notification(request, pk):
+    notification = get_object_or_404(Notification, pk=pk)
+    read_status, created = ReadStatus.objects.get_or_create(
+        user=request.user,
+        notification=notification
+    )
+
+    if read_status.is_pinned:
+        read_status.is_pinned = False
+        read_status.pinned_at = None
+        messages.success(request, "Notification unpinned.")
+    else:
+        read_status.is_pinned = True
+        read_status.pinned_at = timezone.now()
+        messages.success(request, "Notification pinned.")
+
+    read_status.save()
+    return redirect(request.META.get('HTTP_REFERER', 'notification_list'))
     

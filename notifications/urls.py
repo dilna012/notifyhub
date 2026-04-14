@@ -15,4 +15,5 @@ urlpatterns = [
     path('unread-count/', views.unread_count, name='unread_count'),
     path('draft/<int:pk>/edit/', views.edit_draft, name='edit_draft'),
     path('publish-draft/<int:pk>/', views.publish_draft, name='publish_draft'),
+    path('notifications/<int:pk>/toggle-pin/', views.toggle_pin_notification, name='toggle_pin_notification'),
 ]
