@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Profile Setup - Step 2 of 3</h4>
+                    <div class="progress mt-2">
+                        <div class="progress-bar" role="progressbar" style="width: 66%">66%</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5>Add Email for Notifications</h5>
+                    <p class="text-muted">We'll send reminder notifications to this email.</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Email Address</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'profile_setup_step1' %}" class="btn btn-secondary">Previous</a>
+                            <button type="submit" class="btn btn-primary">Complete Setup</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -734,7 +734,7 @@
             }
         );
         function updateUnreadCount() {
-    fetch('/unread-count/')
+    fetch('/notifications/unread-count/')
         .then(response => response.json())
         .then(data => {
             document.getElementById('unread-count').innerText = data.count;

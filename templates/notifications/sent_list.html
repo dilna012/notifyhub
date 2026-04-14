@@ -77,3 +77,56 @@ function confirmDelete(notificationId, notificationTitle) {
 }
 </script>
 {% endblock %}
+<!-- Inside the notification loop -->
+{% for notification in notifications %}
+<div class="notification-item mb-3 p-3 border rounded">
+    <div class="d-flex justify-content-between align-items-start">
+        <div>
+            <h5>{{ notification.title }}</h5>
+            <p class="text-muted">{{ notification.message|truncatewords:30 }}</p>
+            <small>Sent: {{ notification.display_time|date:"M d, Y" }}</small>
+            <br>
+            <span class="badge bg-info">{{ notification.get_category_display }}</span>
+        </div>
+        <div class="btn-group">
+            <!-- 🔔 SET REMINDER BUTTON - ADD THIS -->
+            <button class="btn btn-outline-warning btn-sm" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#reminderModal{{ notification.id }}">
+                🔔 Remind Me
+            </button>
+            <a href="{% url 'notification_detail' notification.id %}" 
+               class="btn btn-outline-primary btn-sm">View</a>
+        </div>
+    </div>
+</div>
+
+<!-- Reminder Modal -->
+<div class="modal fade" id="reminderModal{{ notification.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Set Personal Reminder</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'set_reminder' notification.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p><strong>{{ notification.title }}</strong></p>
+                    <div class="mb-3">
+                        <label class="form-label">Remind me at:</label>
+                        <input type="datetime-local" 
+                               name="reminder_time" 
+                               class="form-control" 
+                               required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Save Reminder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}

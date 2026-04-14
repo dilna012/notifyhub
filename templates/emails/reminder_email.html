@@ -1,0 +1,155 @@
+<!-- templates/emails/reminder_email.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .reminder-box {
+            background: white;
+            border-left: 4px solid {{ priority_color }};
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .reminder-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        .reminder-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .meta-item {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .meta-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+        .meta-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #495057;
+        }
+        .description {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .priority-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            background: {{ priority_color }};
+            color: white;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📅 Reminder Notification</h1>
+        <p>You have a scheduled reminder</p>
+    </div>
+    
+    <div class="content">
+        <p>Hello {{ user_profile.user.get_full_name|default:user_profile.user.username }},</p>
+        
+        <p>This is a reminder for an upcoming event:</p>
+        
+        <div class="reminder-box">
+            <div class="reminder-title">{{ reminder.title }}</div>
+            <span class="priority-badge">{{ priority }} Priority</span>
+            
+            <div class="reminder-meta">
+                <div class="meta-item">
+                    <div class="meta-label">📋 Type</div>
+                    <div class="meta-value">{{ reminder_type }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">⏰ Scheduled Time</div>
+                    <div class="meta-value">{{ reminder.scheduled_time|date:"F j, Y" }} at {{ reminder.scheduled_time|time:"g:i A" }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">👤 Created By</div>
+                    <div class="meta-value">{{ reminder.created_by.get_full_name|default:reminder.created_by.username }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">📊 Status</div>
+                    <div class="meta-value">{{ reminder.get_status_display }}</div>
+                </div>
+            </div>
+            
+            <div class="description">
+                <strong>Description:</strong><br>
+                {{ reminder.description|linebreaks }}
+            </div>
+            
+            {% if reminder.attachment %}
+            <p><strong>📎 Attachment:</strong> A file is attached to this reminder.</p>
+            {% endif %}
+        </div>
+        
+        <p>Please make necessary arrangements for this reminder.</p>
+        
+        <a href="{{ site_url }}{% url 'reminder_detail' reminder.id %}" class="button">
+            View Reminder Details
+        </a>
+        
+        <div class="footer">
+            <p>This is an automated reminder from {{ site_name }}.<br>
+            Please do not reply to this email.</p>
+            <p>© {% now "Y" %} {{ site_name }}. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

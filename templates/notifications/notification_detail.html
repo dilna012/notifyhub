@@ -1,4 +1,3 @@
-<!-- templates/notifications/notification_detail.html -->
 {% extends 'base.html' %}
 
 {% block title %}{{ notification.title }}{% endblock %}
@@ -24,7 +23,26 @@
             </div>
             {% endif %}
             <div class="card-body">
-                <h2 class="card-title">{{ notification.title }}</h2>
+                <!-- SIMPLE REMINDER LINK -->
+<div style="background: #fff3cd; border: 2px solid #ffc107; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+    <a href="{% url 'set_reminder' notification.id %}" 
+       style="background: #ffc107; color: black; padding: 10px 20px; 
+              text-decoration: none; border-radius: 5px; font-weight: bold; 
+              display: inline-block;">
+        🔔 SET REMINDER FOR THIS NOTIFICATION
+    </a>
+</div>
+                <div class="d-flex justify-content-between align-items-start">
+                    <h2 class="card-title">{{ notification.title }}</h2>
+                    
+                    <!-- 🔔 SET REMINDER BUTTON - FOR ALL LOGGED-IN USERS -->
+                    <button class="btn btn-warning" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#reminderModal"
+                            style="display: inline-block !important; visibility: visible !important; opacity: 1 !important; background-color: #ffc107 !important; color: black !important; padding: 10px 20px !important; border: 2px solid red !important;">
+                        🔔 Set Reminder
+                    </button>
+                </div>
                 
                 <div class="mb-3">
                     <span class="badge bg-info">{{ notification.sender.get_role_display }}</span>
@@ -39,27 +57,6 @@
                 <div class="card-text mb-4">
                     {{ notification.message|linebreaks }}
                 </div>
-                
-                {% if user.role == 'student' and not notification.is_draft %}
-                <div class="mt-4">
-                    <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#reminderForm">
-                        <i class="bi bi-alarm"></i> Set Reminder
-                    </button>
-                    
-                    <div class="collapse mt-3" id="reminderForm">
-                        <div class="card card-body">
-                            <form method="post" action="{% url 'set_reminder' notification.id %}">
-                                {% csrf_token %}
-                                <div class="mb-3">
-                                    <label for="reminder_time" class="form-label">Reminder Time</label>
-                                    <input type="datetime-local" class="form-control" id="reminder_time" name="reminder_time" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Set Reminder</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>
@@ -89,7 +86,6 @@
                 </a>
                 {% endif %}
                 
-                <!-- DELETE BUTTON - Only appears for the sender -->
                 <hr>
                 <button type="button" class="btn btn-danger w-100" 
                         onclick="confirmDelete('{{ notification.id }}', '{{ notification.title|escapejs }}')">
@@ -129,12 +125,40 @@
     </div>
 </div>
 
-<!-- Delete Confirmation Script -->
+<!-- Reminder Modal -->
+<div class="modal fade" id="reminderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Set Personal Reminder</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'set_reminder' notification.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p><strong>{{ notification.title }}</strong></p>
+                    <div class="mb-3">
+                        <label class="form-label">When would you like to be reminded?</label>
+                        <input type="datetime-local" 
+                               name="reminder_time" 
+                               class="form-control" 
+                               required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Set Reminder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 function confirmDelete(notificationId, notificationTitle) {
     if (confirm(`Are you sure you want to delete "${notificationTitle}"?\n\nThis action cannot be undone!`)) {
         window.location.href = `/notifications/${notificationId}/delete/`;
     }
-}
+}   
 </script>
 {% endblock %}

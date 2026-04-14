@@ -1,4 +1,4 @@
-# notifications/views.py
+    # notifications/views.py
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -9,16 +9,30 @@ from django.db.models import Count, Q
 from datetime import timedelta
 import json
 import csv
-
 from .models import Notification, ReadStatus
 from accounts.models import User
 from .forms import NotificationForm
 from accounts.decorators import sender_required, role_required
 from django.http import JsonResponse
 from .models import Notification
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
+def notification_detail(request, pk):
+    notification = get_object_or_404(Notification, pk=pk)
+    # ... existing code ...
+    
+    # ADD THESE TWO LINES FOR DEBUGGING
+    print("=" * 50)
+    print(f"Template being used: notifications/notification_detail.html")
+    print("=" * 50)
+    
+    return render(request, 'notifications/notification_detail.html', context)
 def home_page(request):
     """Home page for the website"""
+
+    total_notifications = Notification.objects.filter(is_draft=False).count()
     
     # Get REAL statistics from database
     total_notifications = Notification.objects.filter(is_draft=False).count()
@@ -498,9 +512,12 @@ def export_stats(request, pk):
     
     return response
 
+from django.http import JsonResponse
+from .models import ReadStatus
+
 def unread_count(request):
     if request.user.is_authenticated:
-        count = Notification.objects.filter(
+        count = ReadStatus.objects.filter(
             user=request.user,
             is_read=False
         ).count()
@@ -528,11 +545,11 @@ def edit_draft(request, pk):
                 notification.updated_at = timezone.now()
                 notification.save()
 
-               # In notifications/views.py — replace set_reminder view
+            # In notifications/views.py — replace set_reminder view
 
 # In notifications/views.py — replace set_reminder view
 
-@login_required
+'''@login_required
 def set_reminder(request, pk):
     """Users can set reminders for notifications"""
     if request.method == 'POST':
@@ -555,7 +572,7 @@ def set_reminder(request, pk):
             else:
                 messages.error(request, 'Invalid date/time format.')
 
-    return redirect('notification_detail', pk=pk)
+    return redirect('notification_detail', pk=pk)'''
 
 
     
@@ -580,4 +597,320 @@ def publish_draft(request, pk):
         return redirect("notification_list")
 
     return redirect("draft_list")
+
+# views.py (add to existing views)
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils import timezone
+from django.http import JsonResponse
+from django.db.models import Q
+from .models import Reminder, ReminderRecipient, UserProfile
+from .forms import ReminderForm, IndividualReminderForm
+from .services import ReminderService
+
+@login_required
+def create_reminder(request):
+    """Create a new reminder"""
+    if request.method == 'POST':
+        form = ReminderForm(request.POST, request.FILES)
+        if form.is_valid():
+            reminder = form.save(commit=False)
+            reminder.created_by = request.user
+            
+            # Set scheduled time
+            scheduled_date = form.cleaned_data['scheduled_date']
+            scheduled_time = form.cleaned_data['scheduled_time']
+            reminder.scheduled_time = timezone.make_aware(
+                timezone.datetime.combine(scheduled_date, scheduled_time)
+            )
+            
+            reminder.save()
+            
+            # Add recipients based on selections
+            recipients = set()
+            
+            if reminder.send_to_all_teachers:
+                teachers = User.objects.filter(userprofile__user_type='teacher')
+                recipients.update(teachers)
+            
+            if reminder.send_to_all_students:
+                students = User.objects.filter(userprofile__user_type='student')
+                recipients.update(students)
+            
+            if reminder.send_to_all_nonteaching:
+                nonteaching = User.objects.filter(userprofile__user_type='nonteaching')
+                recipients.update(nonteaching)
+            
+            if reminder.send_to_principal:
+                principal = User.objects.filter(userprofile__user_type='principal')
+                recipients.update(principal)
+            
+            # Add recipients to reminder
+            for user in recipients:
+                ReminderRecipient.objects.get_or_create(
+                    reminder=reminder,
+                    user=user
+                )
+            
+            messages.success(request, f'Reminder created successfully for {len(recipients)} recipients!')
+            return redirect('reminder_list')
+    else:
+        form = ReminderForm()
     
+    return render(request, 'reminders/create_reminder.html', {'form': form})
+
+@login_required
+def reminder_list(request):
+    """List all reminders"""
+    user_profile = request.user.userprofile
+    
+    # Get reminders where user is recipient or creator
+    reminders = Reminder.objects.filter(
+        Q(recipients=request.user) | Q(created_by=request.user)
+    ).distinct().order_by('-scheduled_time')
+    
+    # Filter options
+    filter_type = request.GET.get('type', 'all')
+    filter_status = request.GET.get('status', 'all')
+    
+    if filter_type != 'all':
+        reminders = reminders.filter(reminder_type=filter_type)
+    
+    if filter_status == 'upcoming':
+        reminders = reminders.filter(scheduled_time__gte=timezone.now())
+    elif filter_status == 'past':
+        reminders = reminders.filter(scheduled_time__lt=timezone.now())
+    
+    context = {
+        'reminders': reminders,
+        'filter_type': filter_type,
+        'filter_status': filter_status,
+        'now': timezone.now(),
+    }
+    
+    return render(request, 'reminders/reminder_list.html', context)
+
+@login_required
+def reminder_detail(request, reminder_id):
+    """View reminder details"""
+    reminder = get_object_or_404(Reminder, id=reminder_id)
+    
+    # Check if user has permission to view
+    if not (request.user == reminder.created_by or request.user in reminder.recipients.all()):
+        messages.error(request, 'You do not have permission to view this reminder.')
+        return redirect('reminder_list')
+    
+    # Mark as read if recipient
+    recipient = ReminderRecipient.objects.filter(
+        reminder=reminder,
+        user=request.user
+    ).first()
+    
+    if recipient and not recipient.is_read:
+        recipient.is_read = True
+        recipient.read_at = timezone.now()
+        recipient.save()
+    
+    context = {
+        'reminder': reminder,
+        'recipients': reminder.recipients.all(),
+        'recipient_count': reminder.recipients.count(),
+    }
+    
+    return render(request, 'reminders/reminder_detail.html', context)
+
+@login_required
+def my_reminders(request):
+    """View reminders for logged-in user"""
+    reminders = Reminder.objects.filter(
+        recipients=request.user
+    ).order_by('-scheduled_time')
+    
+    # Get read/unread status
+    reminder_status = []
+    for reminder in reminders:
+        recipient = ReminderRecipient.objects.get(reminder=reminder, user=request.user)
+        reminder_status.append({
+            'reminder': reminder,
+            'is_read': recipient.is_read,
+            'email_sent': recipient.email_sent
+        })
+    
+    context = {
+        'reminder_status': reminder_status,
+        'now': timezone.now(),
+    }
+    
+    return render(request, 'reminders/my_reminders.html', context)
+
+@login_required
+def send_reminder_now(request, reminder_id):
+    """Manually send reminder email immediately"""
+    reminder = get_object_or_404(Reminder, id=reminder_id)
+    
+    # Check permission
+    if request.user != reminder.created_by and request.user.userprofile.user_type != 'admin':
+        messages.error(request, 'You do not have permission to send this reminder.')
+        return redirect('reminder_detail', reminder_id=reminder_id)
+    
+    # Send emails
+    service = ReminderService()
+    sent_count = service.send_reminder_emails(reminder)
+    
+    if sent_count > 0:
+        messages.success(request, f'Reminder sent to {sent_count} recipients!')
+    else:
+        messages.warning(request, 'No emails were sent. Check if recipients have completed their profiles.')
+    
+    return redirect('reminder_detail', reminder_id=reminder_id)   
+
+# Add to notifications/views.py
+from .forms import ProfileSetupStep1Form, ProfileSetupStep2Form
+
+@login_required
+def profile_setup_step1(request):
+    profile = request.user.userprofile
+    
+    if profile.is_profile_complete:
+        return redirect('notification_dashboard')
+    
+    if profile.user_type not in ['principal', 'teacher', 'nonteaching', 'admin']:
+        return redirect('home_page')
+    
+    if request.method == 'POST':
+        form = ProfileSetupStep1Form(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            profile.completion_step = 2
+            profile.save()
+            messages.success(request, 'Profile picture saved! Please add your email.')
+            return redirect('profile_setup_step2')
+    else:
+        form = ProfileSetupStep1Form(instance=profile)
+    
+    return render(request, 'profile_setup/step1.html', {
+        'form': form,
+        'step': 1,
+        'profile': profile
+    })
+
+@login_required
+def profile_setup_step2(request):
+    profile = request.user.userprofile
+    
+    if profile.is_profile_complete:
+        return redirect('notification_dashboard')
+    if profile.completion_step < 2:
+        return redirect('profile_setup_step1')
+    
+    if request.method == 'POST':
+        form = ProfileSetupStep2Form(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            profile.completion_step = 3
+            profile.is_profile_complete = True
+            profile.save()
+            
+            # Update User model email
+            request.user.email = profile.email
+            request.user.save()
+            
+            messages.success(request, 'Profile completed successfully!')
+            return redirect('profile_setup_step3')
+    else:
+        form = ProfileSetupStep2Form(instance=profile)
+    
+    return render(request, 'profile_setup/step2.html', {
+        'form': form,
+        'step': 2,
+        'profile': profile
+    })
+
+@login_required
+def profile_setup_step3(request):
+    profile = request.user.userprofile
+    return render(request, 'profile_setup/step3.html', {
+        'step': 3,
+        'profile': profile
+    })
+
+@login_required
+def set_reminder(request, pk):
+    """Set personal reminder for any notification - Works for ALL roles"""
+    if request.method == 'POST':
+        notification = get_object_or_404(Notification, pk=pk)
+        
+        # Get or create read status for this user
+        read_status, created = ReadStatus.objects.get_or_create(
+            user=request.user,
+            notification=notification
+        )
+        
+        reminder_time = request.POST.get('reminder_time')
+        if reminder_time:
+            from django.utils.dateparse import parse_datetime
+            from django.utils import timezone
+            
+            parsed_time = parse_datetime(reminder_time)
+            
+            if parsed_time:
+                # Make timezone aware
+                if timezone.is_naive(parsed_time):
+                    parsed_time = timezone.make_aware(parsed_time)
+                
+                read_status.reminder_time = parsed_time
+                read_status.reminder_sent = False  # Reset if updating
+                read_status.save()
+                
+                messages.success(request, 
+                    f'🔔 Reminder set for {parsed_time.strftime("%B %d, %Y at %I:%M %p")}!')
+            else:
+                messages.error(request, 'Invalid date/time format.')
+    
+    # Redirect back to the previous page
+    referer = request.META.get('HTTP_REFERER')
+    if referer:
+        return redirect(referer)
+    return redirect('notification_list')
+
+def notification_detail(request, pk):
+    notification = get_object_or_404(Notification, pk=pk)
+    # ... existing code ...
+    
+    # ADD THIS LINE
+    print(f"✅ USING TEMPLATE: notifications/notification_detail.html")
+    
+    return render(request, 'notifications/notification_detail.html', context)
+
+def notification_detail(request, pk):
+    notification = get_object_or_404(Notification, pk=pk)
+    
+    # ... all your existing code above this line ...
+    
+    # ADD THIS HTML BUTTON DIRECTLY
+    from django.http import HttpResponse
+    from django.shortcuts import render
+    
+    # Render the template first
+    html_content = render(request, 'notifications/notification_detail.html', context).content.decode('utf-8')
+    
+    # Create the reminder button HTML
+    reminder_button = f'''
+    <div style="position: fixed; top: 100px; right: 20px; z-index: 9999; 
+                background: #ffc107; padding: 15px 25px; border-radius: 10px; 
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2); border: 3px solid red;">
+        <a href="/notifications/{notification.id}/set-reminder/" 
+           style="color: black; text-decoration: none; font-weight: bold; font-size: 18px;">
+            🔔 SET REMINDER
+        </a>
+    </div>
+    '''
+    
+    # Insert the button before </body>
+    if '</body>' in html_content:
+        html_content = html_content.replace('</body>', f'{reminder_button}</body>')
+    else:
+        html_content = html_content + reminder_button
+    
+    return HttpResponse(html_content)

@@ -39,3 +39,27 @@ class Command(BaseCommand):
                 )
 
         self.stdout.write(self.style.SUCCESS(f'\nDone. {count} reminder(s) sent.'))
+
+# management/commands/send_reminders.py
+from django.core.management.base import BaseCommand
+from django.utils import timezone
+from your_app.services import ReminderService
+import logging
+
+logger = logging.getLogger(__name__)
+
+class Command(BaseCommand):
+    help = 'Send scheduled reminders via email'
+
+    def handle(self, *args, **options):
+        service = ReminderService()
+        
+        self.stdout.write('Checking for due reminders...')
+        sent_count = service.check_and_send_due_reminders()
+        
+        if sent_count > 0:
+            self.stdout.write(
+                self.style.SUCCESS(f'Successfully sent {sent_count} reminder emails')
+            )
+        else:
+            self.stdout.write('No reminders to send at this time.')

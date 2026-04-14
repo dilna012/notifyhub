@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4>Profile Completed Successfully! 🎉</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h5>Thank you, {{ user.get_full_name|default:user.username }}!</h5>
+                    <p>Your profile is now complete. You'll receive notifications at:</p>
+                    <p><strong>{{ profile.email }}</strong></p>
+                    
+                    <a href="{% url 'notification_dashboard' %}" class="btn btn-primary btn-lg mt-3">
+                        Go to Dashboard
+                    </a>
+                        Go to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
