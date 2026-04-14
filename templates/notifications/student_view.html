@@ -219,22 +219,6 @@
             </div>
             {% endif %}
             
-            <!-- Reminder Section -->
-            <div class="reminder-section">
-                <button class="btn btn-sm btn-outline-warning" onclick="showReminderForm({{ notification.id }})">
-                    <i class="fas fa-clock"></i> Set Reminder
-                </button>
-                
-                <div id="reminder-form-{{ notification.id }}" class="reminder-form" style="display: none;">
-                    <div class="input-group">
-                        <input type="datetime-local" id="reminder-time-{{ notification.id }}" class="form-control">
-                        <button class="btn btn-warning btn-sm" onclick="setReminder({{ notification.id }})">Save</button>
-                        <button class="btn btn-secondary btn-sm" onclick="hideReminderForm({{ notification.id }})">Cancel</button>
-                    </div>
-                </div>
-                
-                <div id="reminder-status-{{ notification.id }}" class="reminder-status"></div>
-            </div>
             
             <!-- Meta Info -->
             <div class="notification-meta">
@@ -288,32 +272,6 @@ function filterByCategory(category, btn) {
     });
 }
 
-// ===== REMINDER FUNCTIONS =====
-function showReminderForm(id) {
-    document.getElementById('reminder-form-' + id).style.display = 'block';
-}
-
-function hideReminderForm(id) {
-    document.getElementById('reminder-form-' + id).style.display = 'none';
-}
-
-function setReminder(id) {
-    const time = document.getElementById('reminder-time-' + id).value;
-    const status = document.getElementById('reminder-status-' + id);
-    
-    if (!time) {
-        status.innerHTML = '<span class="text-danger">Select time</span>';
-        return;
-    }
-    
-    // Save to localStorage
-    let reminders = JSON.parse(localStorage.getItem('reminders') || '{}');
-    reminders[id] = time;
-    localStorage.setItem('reminders', JSON.stringify(reminders));
-    
-    status.innerHTML = '<span class="text-success">✓ Reminder set</span>';
-    hideReminderForm(id);
-}
 
 // ===== SEARCH FUNCTION =====
 document.getElementById('searchInput')?.addEventListener('input', function() {
@@ -325,27 +283,5 @@ document.getElementById('searchInput')?.addEventListener('input', function() {
     });
 });
 
-// ===== LOAD SAVED REMINDERS =====
-window.onload = function() {
-    const saved = JSON.parse(localStorage.getItem('reminders') || '{}');
-    for (let id in saved) {
-        const status = document.getElementById('reminder-status-' + id);
-        if (status) {
-            status.innerHTML = '<span class="text-success">⏰ Reminder set</span>';
-        }
-    }
-};
-
-// ===== DEBUG FUNCTIONS =====
-function showAllReminders() {
-    console.log(JSON.parse(localStorage.getItem('reminders') || '{}'));
-}
-
-function clearAllReminders() {
-    if (confirm('Clear all reminders?')) {
-        localStorage.removeItem('reminders');
-        location.reload();
-    }
-}
 </script>
 {% endblock %}

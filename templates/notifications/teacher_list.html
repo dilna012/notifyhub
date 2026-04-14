@@ -17,12 +17,8 @@
             All Notifications
         {% endif %}
     </h2>
-    <!--<a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left"></i> Back to Dashboard
-    </a>-->
 </div>
 
-<!-- Filter Tabs -->
 <div class="mb-4">
     <ul class="nav nav-tabs">
         <li class="nav-item">
@@ -52,7 +48,6 @@
     </ul>
 </div>
 
-<!-- Notifications List -->
 {% if notifications %}
     <div class="list-group">
         {% for item in notifications %}
@@ -69,11 +64,12 @@
                             {% endif %}
                         {% endif %}
                     </h5>
+
                     <p class="mb-1">{{ item.notification.message|truncatechars:150 }}</p>
+
                     <small>
                         {% if item.is_sent %}
                             <i class="fas fa-paper-plane"></i> You sent to students
-                            <!-- DELETE BUTTON FOR SENT NOTIFICATIONS -->
                             <button class="btn btn-sm btn-link text-danger p-0 ms-2" 
                                     onclick="event.preventDefault(); confirmDelete('{{ item.notification.id }}', '{{ item.notification.title|escapejs }}')">
                                 <i class="fas fa-trash"></i> Delete
@@ -81,14 +77,47 @@
                         {% else %}
                             <i class="fas fa-inbox"></i> From Principal
                         {% endif %}
-                        <span class="ms-3"><i class="fas fa-clock"></i> {{ item.notification.published_at|timesince }} ago</span>
+                        <span class="ms-3">
+                            <i class="fas fa-clock"></i> {{ item.notification.published_at|timesince }} ago
+                        </span>
                     </small>
+
+                    {% if not item.is_sent %}
+                        <div class="mt-3">
+                            {% if item.reminder_time %}
+                                <div class="alert alert-info py-2 px-3 mb-2">
+                                    <small>
+                                        <i class="fas fa-clock"></i>
+                                        Reminder set for {{ item.reminder_time|date:"M d, Y h:i A" }}
+                                    </small>
+                                </div>
+                            {% endif %}
+
+                            <form method="POST" action="{% url 'set_reminder' item.notification.id %}" class="row g-2">
+                                {% csrf_token %}
+                                <div class="col-md-8">
+                                    <input type="datetime-local"
+                                           name="reminder_time"
+                                           class="form-control form-control-sm"
+                                           value="{{ item.reminder_time|date:'Y-m-d\TH:i' }}"
+                                           required>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-warning btn-sm w-100">
+                                        {% if item.reminder_time %}Update{% else %}Set{% endif %} Reminder
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    {% endif %}
                 </div>
+
                 <div class="text-end">
                     <span class="badge category-badge category-{{ item.notification.category }}">
                         {{ item.notification.get_category_display }}
                     </span>
                     <br>
+
                     {% if not item.is_sent %}
                         {% if item.is_read %}
                             <small class="text-success"><i class="fas fa-check-circle"></i> Read</small>
@@ -96,6 +125,7 @@
                             <small class="text-warning"><i class="fas fa-circle"></i> Unread</small>
                         {% endif %}
                     {% endif %}
+
                     <br>
                     <a href="{% url 'notification_detail' item.notification.id %}" class="btn btn-sm btn-outline-primary mt-2">
                         <i class="fas fa-eye"></i> View
@@ -120,13 +150,9 @@
                 There are no notifications to display.
             {% endif %}
         </p>
-        <!--<a href="{% url 'dashboard' %}" class="btn btn-primary">
-            <i class="fas fa-arrow-left"></i> Back to Dashboard
-        </a>-->
     </div>
 {% endif %}
 
-<!-- Delete Confirmation Script -->
 <script>
 function confirmDelete(notificationId, notificationTitle) {
     if (confirm(`Are you sure you want to delete "${notificationTitle}"?\n\nThis action cannot be undone!`)) {

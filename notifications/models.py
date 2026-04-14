@@ -73,29 +73,21 @@ from django.utils import timezone
 
 class ReadStatus(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
     notification = models.ForeignKey(
-        Notification, 
+        Notification,
         on_delete=models.CASCADE
     )
     is_read = models.BooleanField(default=False)
     read_at = models.DateTimeField(null=True, blank=True)
-
     reminder_time = models.DateTimeField(null=True, blank=True)
-
-    # 🔥 ADD THIS
     reminder_sent = models.BooleanField(default=False)
+    reminder_sent_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = ['user', 'notification']
-    
+
     def __str__(self):
         return f"{self.user.username} - {self.notification.title}: {'Read' if self.is_read else 'Unread'}"
-    
-    def mark_as_read(self):
-        if not self.is_read:
-            self.is_read = True
-            self.read_at = timezone.now()
-            self.save()

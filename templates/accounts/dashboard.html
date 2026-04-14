@@ -1,4 +1,3 @@
-<!-- templates/accounts/dashboard.html -->
 {% extends 'base.html' %}
 
 {% block title %}Dashboard{% endblock %}
@@ -7,8 +6,8 @@
 <div class="row mb-4">
     <div class="col">
         <h2>
-            <i class="bi bi-person-circle"></i> 
-            Welcome, 
+            <i class="bi bi-person-circle"></i>
+            Welcome,
             {% if user.first_name %}
                 {{ user.first_name }}!
             {% else %}
@@ -21,7 +20,6 @@
     </div>
 </div>
 
-<!-- ===== PRINCIPAL DASHBOARD ===== -->
 {% if user.role == 'principal' %}
 <div class="row g-4 mb-4">
     <div class="col-md-4">
@@ -40,7 +38,7 @@
             </a>
         </div>
     </div>
-    
+
     <div class="col-md-4">
         <div class="modern-card">
             <div class="d-flex justify-content-between align-items-center">
@@ -57,7 +55,7 @@
             </a>
         </div>
     </div>
-    
+
     <div class="col-md-4">
         <div class="modern-card">
             <div class="d-flex justify-content-between align-items-center">
@@ -85,7 +83,7 @@
             <i class="fas fa-chart-line"></i> View Analytics
         </a>
     </div>
-    
+
     {% if recent_notifications %}
         <div class="list-group list-group-flush">
             {% for notification in recent_notifications %}
@@ -95,7 +93,7 @@
                         <h6 class="mb-1 fw-bold">{{ notification.title }}</h6>
                         <p class="mb-1 text-muted">{{ notification.message|truncatechars:100 }}</p>
                         <small>
-                            <i class="fas fa-chart-simple"></i> 
+                            <i class="fas fa-chart-simple"></i>
                             Read: {{ notification.get_read_count }}/{{ notification.get_total_students }}
                         </small>
                     </div>
@@ -121,7 +119,6 @@
     {% endif %}
 </div>
 
-<!-- ===== TEACHER DASHBOARD ===== -->
 {% elif user.role == 'teacher' %}
 <div class="row g-4 mb-4">
     <div class="col-md-3">
@@ -140,7 +137,7 @@
             </div>
         </a>
     </div>
-    
+
     <div class="col-md-3">
         <a href="{% url 'notification_list' %}?filter=sent" class="text-decoration-none">
             <div class="modern-card">
@@ -157,7 +154,7 @@
             </div>
         </a>
     </div>
-    
+
     <div class="col-md-3">
         <a href="{% url 'notification_list' %}?filter=received" class="text-decoration-none">
             <div class="modern-card">
@@ -174,7 +171,7 @@
             </div>
         </a>
     </div>
-    
+
     <div class="col-md-3">
         <a href="{% url 'notification_list' %}?filter=unread" class="text-decoration-none">
             <div class="modern-card">
@@ -193,7 +190,6 @@
     </div>
 </div>
 
-<!-- Recent Notifications (Combined) -->
 <div class="modern-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5 class="fw-bold mb-0">
@@ -203,11 +199,11 @@
             View All <i class="fas fa-arrow-right"></i>
         </a>
     </div>
-    
+
     {% if recent_notifications %}
         <div class="list-group list-group-flush">
             {% for item in recent_notifications %}
-            <a href="{% url 'notification_detail' item.notification.id %}" class="list-group-item list-group-item-action">
+            <div class="list-group-item">
                 <div class="d-flex w-100 justify-content-between align-items-center">
                     <div>
                         <h6 class="mb-1 fw-bold">
@@ -220,17 +216,53 @@
                                 {% endif %}
                             {% endif %}
                         </h6>
+
                         <p class="mb-1 text-muted">{{ item.notification.message|truncatechars:100 }}</p>
+
                         <small>
-                            <i class="fas fa-user"></i> 
+                            <i class="fas fa-user"></i>
                             {% if item.is_sent %}
                                 You sent to students
                             {% else %}
                                 Received from {{ item.notification.sender.get_role_display }}
                             {% endif %}
-                            <span class="ms-3"><i class="fas fa-clock"></i>published at {{ item.notification.display_time}}</span>
+                            <span class="ms-3">
+                                <i class="fas fa-clock"></i> published at {{ item.notification.display_time }}
+                            </span>
                         </small>
+
+                        {% if not item.is_sent %}
+                            <div class="mt-3">
+                                {% if item.reminder_time %}
+                                    <div class="alert alert-info py-2 px-3 mb-2">
+                                        <small>
+                                            <i class="fas fa-clock"></i>
+                                            Reminder set for {{ item.reminder_time|date:"M d, Y h:i A" }}
+                                        </small>
+                                    </div>
+                                {% endif %}
+
+                                <form method="POST" action="{% url 'set_reminder' item.notification.id %}" class="row g-2">
+                                    {% csrf_token %}
+                                    <div class="col-md-8">
+                                        <input
+                                            type="datetime-local"
+                                            name="reminder_time"
+                                            class="form-control form-control-sm"
+                                            value="{{ item.reminder_time|date:'Y-m-d\TH:i' }}"
+                                            required
+                                        >
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn btn-warning btn-sm w-100">
+                                            {% if item.reminder_time %}Update{% else %}Set{% endif %} Reminder
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        {% endif %}
                     </div>
+
                     <div class="text-end">
                         <span class="badge category-badge category-{{ item.notification.category }}">
                             {{ item.notification.get_category_display }}
@@ -241,9 +273,13 @@
                         {% elif not item.is_sent and not item.is_read %}
                             <small class="text-warning"><i class="fas fa-circle"></i> Unread</small>
                         {% endif %}
+                        <br>
+                        <a href="{% url 'notification_detail' item.notification.id %}" class="btn btn-sm btn-outline-primary mt-2">
+                            View
+                        </a>
                     </div>
                 </div>
-            </a>
+            </div>
             {% endfor %}
         </div>
     {% else %}
@@ -257,7 +293,6 @@
     {% endif %}
 </div>
 
-<!-- Received Notifications Section (from Principal) -->
 {% if received_notifications %}
 <div class="modern-card mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -265,10 +300,10 @@
             <i class="fas fa-inbox text-primary"></i> Notifications from Principal
         </h5>
     </div>
-    
+
     <div class="list-group list-group-flush">
         {% for item in received_notifications %}
-        <a href="{% url 'notification_detail' item.notification.id %}" class="list-group-item list-group-item-action">
+        <div class="list-group-item">
             <div class="d-flex w-100 justify-content-between align-items-center">
                 <div>
                     <h6 class="mb-1 fw-bold">
@@ -281,7 +316,37 @@
                     <small>
                         <i class="fas fa-clock"></i> published at {{ item.notification.display_time }}
                     </small>
+
+                    <div class="mt-3">
+                        {% if item.reminder_time %}
+                            <div class="alert alert-info py-2 px-3 mb-2">
+                                <small>
+                                    <i class="fas fa-clock"></i>
+                                    Reminder set for {{ item.reminder_time|date:"M d, Y h:i A" }}
+                                </small>
+                            </div>
+                        {% endif %}
+
+                        <form method="POST" action="{% url 'set_reminder' item.notification.id %}" class="row g-2">
+                            {% csrf_token %}
+                            <div class="col-md-8">
+                                <input
+                                    type="datetime-local"
+                                    name="reminder_time"
+                                    class="form-control form-control-sm"
+                                    value="{{ item.reminder_time|date:'Y-m-d\TH:i' }}"
+                                    required
+                                >
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-warning btn-sm w-100">
+                                    {% if item.reminder_time %}Update{% else %}Set{% endif %} Reminder
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
+
                 <div class="text-end">
                     <span class="badge category-badge category-{{ item.notification.category }}">
                         {{ item.notification.get_category_display }}
@@ -292,15 +357,18 @@
                     {% else %}
                         <small class="text-warning"><i class="fas fa-circle"></i> Unread</small>
                     {% endif %}
+                    <br>
+                    <a href="{% url 'notification_detail' item.notification.id %}" class="btn btn-sm btn-outline-primary mt-2">
+                        View
+                    </a>
                 </div>
             </div>
-        </a>
+        </div>
         {% endfor %}
     </div>
 </div>
 {% endif %}
 
-<!-- ===== STAFF DASHBOARD ===== -->
 {% elif user.role == 'staff' %}
 <div class="row g-4 mb-4">
     <div class="col-md-6">
@@ -318,7 +386,7 @@
             </div>
         </a>
     </div>
-    
+
     <div class="col-md-6">
         <a href="{% url 'notification_list' %}" class="text-decoration-none">
             <div class="modern-card">
@@ -345,11 +413,11 @@
             View All <i class="fas fa-arrow-right"></i>
         </a>
     </div>
-    
+
     {% if recent_notifications %}
         <div class="list-group list-group-flush">
             {% for item in recent_notifications %}
-            <a href="{% url 'notification_detail' item.notification.id %}" class="list-group-item list-group-item-action">
+            <div class="list-group-item">
                 <div class="d-flex w-100 justify-content-between align-items-center">
                     <div>
                         <h6 class="mb-1 fw-bold">
@@ -358,12 +426,46 @@
                                 <span class="badge bg-danger ms-2">New</span>
                             {% endif %}
                         </h6>
+
                         <p class="mb-1 text-muted">{{ item.notification.message|truncatechars:100 }}</p>
+
                         <small>
                             <i class="fas fa-user"></i> {{ item.notification.sender.get_role_display }}
-                            <span class="ms-3"><i class="fas fa-clock"></i> published at{{ item.notification.display_time }} </span>
+                            <span class="ms-3">
+                                <i class="fas fa-clock"></i> published at {{ item.notification.display_time }}
+                            </span>
                         </small>
+
+                        <div class="mt-3">
+                            {% if item.reminder_time %}
+                                <div class="alert alert-info py-2 px-3 mb-2">
+                                    <small>
+                                        <i class="fas fa-clock"></i>
+                                        Reminder set for {{ item.reminder_time|date:"M d, Y h:i A" }}
+                                    </small>
+                                </div>
+                            {% endif %}
+
+                            <form method="POST" action="{% url 'set_reminder' item.notification.id %}" class="row g-2">
+                                {% csrf_token %}
+                                <div class="col-md-8">
+                                    <input
+                                        type="datetime-local"
+                                        name="reminder_time"
+                                        class="form-control form-control-sm"
+                                        value="{{ item.reminder_time|date:'Y-m-d\TH:i' }}"
+                                        required
+                                    >
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-warning btn-sm w-100">
+                                        {% if item.reminder_time %}Update{% else %}Set{% endif %} Reminder
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
+
                     <div class="text-end">
                         <span class="badge category-badge category-{{ item.notification.category }}">
                             {{ item.notification.get_category_display }}
@@ -376,7 +478,7 @@
                         {% endif %}
                     </div>
                 </div>
-            </a>
+            </div>
             {% endfor %}
         </div>
     {% else %}
@@ -387,7 +489,6 @@
     {% endif %}
 </div>
 
-<!-- ===== FALLBACK FOR OTHER ROLES ===== -->
 {% else %}
 <div class="alert alert-info">
     <i class="fas fa-info-circle"></i>

@@ -31,13 +31,15 @@ def login_view(request):
 @login_required
 def dashboard(request):
     user = request.user
-    
+
     if user.role == 'principal':
-        # Principal dashboard
         drafts = Notification.objects.filter(sender=user, is_draft=True).count()
         total_sent = Notification.objects.filter(sender=user, is_draft=False).count()
-        recent_notifications = Notification.objects.filter(sender=user, is_draft=False).order_by('-created_at')[:5]
-        
+        recent_notifications = Notification.objects.filter(
+            sender=user,
+            is_draft=False
+        ).order_by('-created_at')[:5]
+
         context = {
             'drafts_count': drafts,
             'total_sent': total_sent,
@@ -45,61 +47,61 @@ def dashboard(request):
             'is_principal': True,
         }
         return render(request, 'accounts/dashboard.html', context)
-    
+
     elif user.role == 'teacher':
-        # ===== FIXED: Teacher dashboard =====
-        # 1. Notifications SENT BY this teacher (to students)
         sent_notifications = Notification.objects.filter(
-            sender=user, 
+            sender=user,
             is_draft=False
         ).order_by('-created_at')
-        
-        # 2. Notifications RECEIVED BY this teacher (from Principal)
+
         received_notifications = Notification.objects.filter(
             is_draft=False,
-            send_to_teachers=True  # Notifications meant for teachers
+            send_to_teachers=True
         ).exclude(sender=user).order_by('-created_at')
-        
-        # Get or create read status for received notifications
+
         received_with_status = []
         unread_count = 0
-        
+
         for notification in received_notifications:
             read_status, created = ReadStatus.objects.get_or_create(
                 user=user,
                 notification=notification,
                 defaults={'is_read': False}
             )
-            
+
             if not read_status.is_read:
                 unread_count += 1
-            
+
             received_with_status.append({
                 'notification': notification,
                 'is_read': read_status.is_read,
                 'read_at': read_status.read_at,
-                'reminder_time': read_status.reminder_time
+                'reminder_time': read_status.reminder_time,
+                'is_sent': False,
             })
-        
-        # Combine all notifications for recent list
+
         all_notifications = []
-        for n in sent_notifications:
+
+        for notification in sent_notifications:
             all_notifications.append({
-                'notification': n,
+                'notification': notification,
                 'is_sent': True,
-                'is_read': None
+                'is_read': None,
+                'read_at': None,
+                'reminder_time': None,
             })
-        for n in received_with_status:
-            n['is_sent'] = False
-            all_notifications.append(n)
-        
-        # Sort by created date
-        all_notifications.sort(key=lambda x: x['notification'].created_at, reverse=True)
+
+        for item in received_with_status:
+            all_notifications.append(item)
+
+        all_notifications.sort(
+            key=lambda x: x['notification'].created_at,
+            reverse=True
+        )
         recent_notifications = all_notifications[:5]
-        
-        # Drafts count
+
         drafts = Notification.objects.filter(sender=user, is_draft=True).count()
-        
+
         context = {
             'drafts_count': drafts,
             'total_sent': sent_notifications.count(),
@@ -110,37 +112,36 @@ def dashboard(request):
             'is_teacher': True,
         }
         return render(request, 'accounts/dashboard.html', context)
-    
+
     elif user.role == 'staff':
-        # Staff dashboard
-        all_staff_notifications = Notification.objects.filter(
+        staff_notifications = Notification.objects.filter(
             is_draft=False,
             send_to_staff=True
         ).order_by('-created_at')
-        
+
         notifications_with_status = []
         unread_count = 0
-        
-        for notification in all_staff_notifications:
+
+        for notification in staff_notifications:
             read_status, created = ReadStatus.objects.get_or_create(
                 user=user,
                 notification=notification,
                 defaults={'is_read': False}
             )
-            
+
             if not read_status.is_read:
                 unread_count += 1
-            
+
             notifications_with_status.append({
                 'notification': notification,
                 'is_read': read_status.is_read,
                 'read_at': read_status.read_at,
-                'reminder_time': read_status.reminder_time
+                'reminder_time': read_status.reminder_time,
             })
-        
+
         total_notifications = len(notifications_with_status)
         recent_notifications = notifications_with_status[:5]
-        
+
         context = {
             'unread_count': unread_count,
             'total_notifications': total_notifications,
@@ -149,9 +150,8 @@ def dashboard(request):
             'is_staff': True,
         }
         return render(request, 'accounts/dashboard.html', context)
-    
+
     else:
-        # Fallback for other roles
         context = {
             'unread_count': 0,
             'total_notifications': 0,

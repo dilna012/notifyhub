@@ -6,16 +6,15 @@ from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count, Q
-from datetime import timedelta
+from django.utils.dateparse import parse_datetime
+from datetime import timedelta, datetime
 import json
 import csv
 
 from .models import Notification, ReadStatus
-from accounts.models import User
 from .forms import NotificationForm
+from accounts.models import User
 from accounts.decorators import sender_required, role_required
-from django.http import JsonResponse
-from .models import Notification
 
 def home_page(request):
     """Home page for the website"""
@@ -374,24 +373,6 @@ def notification_stats(request, pk):
         messages.error(request, f"An error occurred: {str(e)}")
         return redirect('notification_list')
 
-# ===== SET REMINDER VIEW =====
-@login_required
-def set_reminder(request, pk):
-    """Students can set reminders for notifications"""
-    if request.method == 'POST':
-        notification = get_object_or_404(Notification, pk=pk)
-        read_status, created = ReadStatus.objects.get_or_create(
-            user=request.user,
-            notification=notification
-        )
-        
-        reminder_time = request.POST.get('reminder_time')
-        if reminder_time:
-            read_status.reminder_time = reminder_time
-            read_status.save()
-            messages.success(request, 'Reminder set successfully!')
-        
-    return redirect('notification_detail', pk=pk)
 
 # ===== ANALYTICS DASHBOARD =====
 @login_required
@@ -544,18 +525,39 @@ def set_reminder(request, pk):
 
         reminder_time = request.POST.get('reminder_time')
         if reminder_time:
-            from django.utils.dateparse import parse_datetime
             parsed_time = parse_datetime(reminder_time)
-            
+
+            # datetime-local often gives naive string like 2026-04-14T15:20
+            if not parsed_time:
+                try:
+                    parsed_time = datetime.strptime(reminder_time, "%Y-%m-%dT%H:%M")
+                except ValueError:
+                    parsed_time = None
+
             if parsed_time:
-                read_status.reminder_time = parsed_time
-                read_status.reminder_sent = False  # reset if rescheduling
-                read_status.save()
-                messages.success(request, f'Reminder set for {parsed_time.strftime("%b %d, %Y at %I:%M %p")}!')
+                if timezone.is_naive(parsed_time):
+                    parsed_time = timezone.make_aware(
+                        parsed_time,
+                        timezone.get_current_timezone()
+                    )
+
+                if parsed_time <= timezone.now():
+                    messages.error(request, 'Reminder time must be in the future.')
+                else:
+                    read_status.reminder_time = parsed_time
+                    read_status.reminder_sent = False
+                    read_status.reminder_sent_at = None
+                    read_status.save()
+
+                    local_time = timezone.localtime(parsed_time)
+                    messages.success(
+                        request,
+                        f'Reminder set for {local_time.strftime("%b %d, %Y at %I:%M %p")}!'
+                    )
             else:
                 messages.error(request, 'Invalid date/time format.')
 
-    return redirect('notification_detail', pk=pk)
+    return redirect(request.META.get('HTTP_REFERER', 'notification_list'))
 
 
     
