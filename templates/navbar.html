@@ -22,6 +22,16 @@
                     </a>
                 </li>
                 
+                <!-- ===== ADMIN NAVBAR LINK ===== -->
+                {% if user.role == 'admin' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'manage_users' %}">
+                        <i class="bi bi-people"></i> Manage Users
+                    </a>
+                </li>
+                {% endif %}
+                <!-- ===== END ADMIN NAVBAR LINK ===== -->
+                
                 {% if user.role == 'teacher' or user.role == 'principal' %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'notification_create' %}">
@@ -58,6 +68,7 @@
                         <i class="bi bi-graph-up"></i> Analytics
                     </a>
                 </li>
+                {% endif %}
             </ul>
         </div>
     </div>

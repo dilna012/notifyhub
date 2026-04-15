@@ -7,6 +7,7 @@ from datetime import timedelta
 
 class User(AbstractUser):
     ROLE_CHOICES = (
+        ('admin', '🔧 Admin'),  
         ('principal', '👑 Principal'),
         ('teacher', '👩‍🏫 Teacher'),
         ('staff', '🧑‍💼 Non-Teaching Staff'),

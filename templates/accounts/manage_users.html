@@ -1,0 +1,107 @@
+<!-- templates/accounts/manage_users.html -->
+{% extends 'base.html' %}
+
+{% block title %}Manage Users{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-users"></i> Manage Users
+    </h2>
+    <a href="{% url 'add_user' %}" class="btn btn-primary">
+        <i class="fas fa-plus-circle"></i> Add New User
+    </a>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="modern-card text-center">
+            <h3 class="text-primary">{{ total_users }}</h3>
+            <p class="text-muted mb-0">Total Users</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="modern-card text-center">
+            <h3 class="text-primary">{{ principal_count }}</h3>
+            <p class="text-muted mb-0">Principals</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="modern-card text-center">
+            <h3 class="text-success">{{ teacher_count }}</h3>
+            <p class="text-muted mb-0">Teachers</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="modern-card text-center">
+            <h3 class="text-info">{{ staff_count }}</h3>
+            <p class="text-muted mb-0">Staff</p>
+        </div>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="modern-card">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                 <tr>
+                    <th>Username</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td><strong>{{ user.username }}</strong></td>
+                    <td>{{ user.first_name }} {{ user.last_name }}</td>
+                    <td>{{ user.email|default:"-" }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if user.role == 'principal' %}bg-primary
+                            {% elif user.role == 'teacher' %}bg-success
+                            {% elif user.role == 'staff' %}bg-info
+                            {% else %}bg-secondary{% endif %}">
+                            {{ user.get_role_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if user.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'edit_user' user.id %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        {% if user != request.user %}
+                        <button class="btn btn-sm btn-outline-danger" 
+                                onclick="confirmDelete('{{ user.id }}', '{{ user.username }}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function confirmDelete(userId, username) {
+    if (confirm(`Are you sure you want to delete "${username}"? This action cannot be undone!`)) {
+        window.location.href = `/accounts/users/${userId}/delete/`;
+    }
+}
+</script>
+{% endblock %}

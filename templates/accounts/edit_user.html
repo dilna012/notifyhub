@@ -1,0 +1,61 @@
+<!-- templates/accounts/edit_user.html -->
+{% extends 'base.html' %}
+
+{% block title %}Edit User{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="modern-card">
+            <h3 class="mb-4">
+                <i class="fas fa-user-edit"></i> Edit User: {{ edit_user.username }}
+            </h3>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">First Name</label>
+                        <input type="text" name="first_name" class="form-control" value="{{ edit_user.first_name }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" name="last_name" class="form-control" value="{{ edit_user.last_name }}">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" value="{{ edit_user.email }}">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Role</label>
+                    <select name="role" class="form-select">
+                        <option value="principal" {% if edit_user.role == 'principal' %}selected{% endif %}>👑 Principal</option>
+                        <option value="teacher" {% if edit_user.role == 'teacher' %}selected{% endif %}>👩‍🏫 Teacher</option>
+                        <option value="staff" {% if edit_user.role == 'staff' %}selected{% endif %}>🧑‍💼 Non-Teaching Staff</option>
+                        <option value="student" {% if edit_user.role == 'student' %}selected{% endif %}>👨‍🎓 Student</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">New Password (leave blank to keep current)</label>
+                    <input type="password" name="new_password" class="form-control">
+                    <small class="text-muted">Only fill this if you want to change the password</small>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <a href="{% url 'manage_users' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

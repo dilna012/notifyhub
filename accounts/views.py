@@ -1,5 +1,5 @@
 # accounts/views.py
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -7,15 +7,13 @@ from notifications.models import Notification, ReadStatus
 from .forms import LoginForm
 from django.utils import timezone
 import random
-from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ForgotPasswordForm, VerifyOTPForm, ResetPasswordForm
 from django.contrib.auth import get_user_model
-from .forms import ForgotPasswordForm, VerifyOTPForm
 from django.core.mail import send_mail
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from .forms import ForgotPasswordForm
 from .models import PasswordResetOTP
+from .forms import ProfileForm
+from .models import User
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -46,9 +44,32 @@ def dashboard(request):
         not user.email or 
         not user.first_name or 
         not user.last_name
-    )   
+    )
 
-    if user.role == 'principal':
+    # ===== ADMIN DASHBOARD =====
+    if user.role == 'admin':
+        total_users = User.objects.count()
+        principal_count = User.objects.filter(role='principal').count()
+        teacher_count = User.objects.filter(role='teacher').count()
+        staff_count = User.objects.filter(role='staff').count()
+        student_count = User.objects.filter(role='student').count()
+        total_notifications = Notification.objects.filter(is_draft=False).count()
+        active_users = User.objects.filter(is_active=True).count()
+        
+        context = {
+            'total_users': total_users,
+            'principal_count': principal_count,
+            'teacher_count': teacher_count,
+            'staff_count': staff_count,
+            'student_count': student_count,
+            'total_notifications': total_notifications,
+            'active_users': active_users,
+            'is_admin': True,
+            'profile_incomplete': profile_incomplete,
+        }
+        return render(request, 'accounts/dashboard.html', context)
+
+    elif user.role == 'principal':
         drafts = Notification.objects.filter(sender=user, is_draft=True).count()
         total_sent = Notification.objects.filter(sender=user, is_draft=False).count()
         recent_notifications = Notification.objects.filter(
@@ -183,13 +204,6 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-# accounts/views.py
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.shortcuts import render, redirect
-
-from .forms import ProfileForm
-
 @login_required
 def profile_view(request):
     return render(request, 'accounts/profile.html', {
@@ -199,7 +213,7 @@ def profile_view(request):
 @login_required
 def edit_profile_view(request):
     if request.method == 'POST':
-        form = ProfileForm(request.POST, request.FILES, instance=request.user)  # ✅ important
+        form = ProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, 'Profile updated successfully.')
@@ -346,3 +360,106 @@ def reset_password_view(request):
         form = ResetPasswordForm()
 
     return render(request, 'accounts/reset_password.html', {'form': form})
+
+# ===== USER MANAGEMENT FUNCTIONS =====
+
+@login_required
+def manage_users(request):
+    """User management page - Only for admin"""
+    if request.user.role != 'admin':
+        messages.error(request, 'You do not have permission to manage users.')
+        return redirect('dashboard')
+    
+    users = User.objects.all().order_by('-date_joined')
+    
+    context = {
+        'users': users,
+        'total_users': users.count(),
+        'principal_count': users.filter(role='principal').count(),
+        'teacher_count': users.filter(role='teacher').count(),
+        'staff_count': users.filter(role='staff').count(),
+        'student_count': users.filter(role='student').count(),
+    }
+    return render(request, 'accounts/manage_users.html', context)
+
+@login_required
+def add_user(request):
+    """Add new user - Only for admin"""
+    if request.user.role != 'admin':
+        messages.error(request, 'You do not have permission to add users.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        email = request.POST.get('email')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        role = request.POST.get('role')
+        
+        if password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return redirect('add_user')
+        
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Username already exists.')
+            return redirect('add_user')
+        
+        User.objects.create_user(
+            username=username,
+            password=password,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            role=role,
+            is_active=True
+        )
+        
+        messages.success(request, f'User "{username}" created successfully!')
+        return redirect('manage_users')
+    
+    return render(request, 'accounts/add_user.html')
+
+@login_required
+def edit_user(request, user_id):
+    """Edit existing user - Only for admin"""
+    if request.user.role != 'admin':
+        messages.error(request, 'You do not have permission to edit users.')
+        return redirect('dashboard')
+    
+    user = get_object_or_404(User, id=user_id)
+    
+    if request.method == 'POST':
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+        user.email = request.POST.get('email', user.email)
+        user.role = request.POST.get('role', user.role)
+        
+        new_password = request.POST.get('new_password')
+        if new_password:
+            user.set_password(new_password)
+        
+        user.save()
+        messages.success(request, f'User "{user.username}" updated successfully!')
+        return redirect('manage_users')
+    
+    return render(request, 'accounts/edit_user.html', {'edit_user': user})
+
+@login_required
+def delete_user(request, user_id):
+    """Delete user - Only for admin"""
+    if request.user.role != 'admin':
+        messages.error(request, 'You do not have permission to delete users.')
+        return redirect('dashboard')
+    
+    user = get_object_or_404(User, id=user_id)
+    
+    if user == request.user:
+        messages.error(request, 'You cannot delete your own account.')
+        return redirect('manage_users')
+    
+    username = user.username
+    user.delete()
+    messages.success(request, f'User "{username}" deleted successfully!')
+    return redirect('manage_users')
