@@ -595,7 +595,6 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'notification_list' %}">
                         <i class="fas fa-bell"></i> Notifications 
-                        (<span id="unread-count">0</span>)
                     </a>
                 </li>
                 
@@ -633,13 +632,22 @@
 </nav>
     <!-- Back Button -->
     {% if request.path != '/' and request.path != '/accounts/login/' %}
-    <div class="container back-button-container">
+<div class="container back-button-container">
+
+    {% if request.resolver_match.url_name == 'profile' %}
+        <!-- ONLY for profile page -->
+        <button onclick="window.location.href='{% url 'dashboard' %}'" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
+    {% else %}
+        <!-- For all other pages -->
         <button onclick="history.back()" class="back-btn">
             <i class="fas fa-arrow-left"></i> Back
         </button>
-    </div>
     {% endif %}
 
+</div>
+{% endif %}
     <!-- Main Content with Page Transition -->
     <div class="container mt-4 page-content">
         {% if messages %}

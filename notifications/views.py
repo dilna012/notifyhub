@@ -110,7 +110,8 @@ def notification_list(request):
         notifications_with_status = pinned + others
 
         return render(request, 'notifications/sent_list.html', {
-            'notifications': notifications_with_status
+            'notifications': notifications_with_status,
+            'now': timezone.now(),
         })
 
     elif request.user.role == 'teacher':
@@ -176,7 +177,8 @@ def notification_list(request):
 
         return render(request, 'notifications/teacher_list.html', {
             'notifications': notifications_with_status,
-            'current_filter': filter_type
+            'current_filter': filter_type,
+            'now': timezone.now()
         })
 
     elif request.user.role == 'staff':
@@ -206,7 +208,8 @@ def notification_list(request):
         notifications_with_status = pinned + others
 
         return render(request, 'notifications/notification_list.html', {
-            'notifications': notifications_with_status
+            'notifications': notifications_with_status,
+            'now': timezone.now(),
         })
 
     else:
@@ -289,7 +292,8 @@ def notification_create(request):
     
     return render(request, 'notifications/notification_create.html', {
         'form': form,
-        'is_principal': request.user.role == 'principal'
+        'is_principal': request.user.role == 'principal',
+        'now': timezone.now(),
     })
 
 # ===== NOTIFICATION DETAIL VIEW =====
@@ -537,55 +541,58 @@ def edit_draft(request, pk):
 
 @login_required
 def set_reminder(request, pk):
-    """Users can set reminders for notifications"""
     if not request.user.email:
         messages.error(request, 'Please add your email in your profile before setting reminders.')
         return redirect('profile')
+
     if request.method == 'POST':
         notification = get_object_or_404(Notification, pk=pk)
+
+        if notification.event_date and notification.event_date <= timezone.now():
+            messages.error(request, 'You cannot set a reminder because the event time has already passed.')
+            return redirect(request.META.get('HTTP_REFERER', 'notification_list'))
+
         read_status, created = ReadStatus.objects.get_or_create(
             user=request.user,
             notification=notification
         )
 
         reminder_time = request.POST.get('reminder_time')
+
         if reminder_time:
-            parsed_time = parse_datetime(reminder_time)
-
-            # datetime-local often gives naive string like 2026-04-14T15:20
-            if not parsed_time:
-                try:
-                    parsed_time = datetime.strptime(reminder_time, "%Y-%m-%dT%H:%M")
-                except ValueError:
-                    parsed_time = None
-
-            if parsed_time:
-                if timezone.is_naive(parsed_time):
-                    parsed_time = timezone.make_aware(
-                        parsed_time,
-                        timezone.get_current_timezone()
-                    )
-
-                if parsed_time <= timezone.now():
-                    messages.error(request, 'Reminder time must be in the future.')
-                else:
-                    read_status.reminder_time = parsed_time
-                    read_status.reminder_sent = False
-                    read_status.reminder_sent_at = None
-                    read_status.save()
-
-                    local_time = timezone.localtime(parsed_time)
-                    messages.success(
-                        request,
-                        f'Reminder set for {local_time.strftime("%b %d, %Y at %I:%M %p")}!'
-                    )
-            else:
+            try:
+                naive_dt = datetime.strptime(reminder_time, "%Y-%m-%dT%H:%M")
+            except ValueError:
                 messages.error(request, 'Invalid date/time format.')
+                return redirect(request.META.get('HTTP_REFERER', 'notification_list'))
+
+            aware_dt = timezone.make_aware(
+                naive_dt,
+                timezone.get_current_timezone()
+            )
+
+            if aware_dt <= timezone.now():
+                messages.error(request, 'Reminder time must be in the future.')
+                return redirect(request.META.get('HTTP_REFERER', 'notification_list'))
+
+            if notification.event_date and aware_dt > notification.event_date:
+                messages.error(request, 'Reminder time must be before the event time.')
+                return redirect(request.META.get('HTTP_REFERER', 'notification_list'))
+
+            read_status.reminder_time = aware_dt
+            read_status.reminder_sent = False
+            read_status.reminder_sent_at = None
+            read_status.save()
+
+            local_time = timezone.localtime(aware_dt)
+            messages.success(
+                request,
+                f'Reminder set for {local_time.strftime("%b %d, %Y at %I:%M %p")}!'
+            )
 
     return redirect(request.META.get('HTTP_REFERER', 'notification_list'))
-
-
     
+      
 @login_required
 @sender_required
 def publish_draft(request, pk):

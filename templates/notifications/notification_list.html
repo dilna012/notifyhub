@@ -91,6 +91,7 @@
                     </div>
                 </div>
 
+                {% if not item.notification.event_date or item.notification.event_date > now %}
                 {% if item.reminder_time %}
                     <div class="alert alert-info py-2 px-3 mt-3 mb-0">
                         <small>
@@ -98,6 +99,7 @@
                             Reminder set for {{ item.reminder_time|date:"M d, Y h:i A" }}
                         </small>
                     </div>
+                {% endif %}
                 {% endif %}
             </div>
         </div>
