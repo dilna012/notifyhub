@@ -1,10 +1,10 @@
+# accounts/forms.py
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import get_user_model
 from .models import User
-from django.contrib.auth import get_user_model
-from django import forms
-from django.contrib.auth import get_user_model
 
+# Login Form
 class LoginForm(AuthenticationForm):
     username = forms.CharField(widget=forms.TextInput(attrs={
         'class': 'form-control', 
@@ -15,21 +15,21 @@ class LoginForm(AuthenticationForm):
         'placeholder': 'Password'
     }))
 
-User = get_user_model()
 
+# Profile Form - Fixed (removed fields that don't exist in model)
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'profile_picture']  
+        fields = ['first_name', 'last_name', 'email', 'profile_picture']
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'profile_picture': forms.FileInput(attrs={'class': 'form-control'}),
         }
-    
-User = get_user_model()
 
 
+# Forgot Password Form
 class ForgotPasswordForm(forms.Form):
     username = forms.CharField(
         max_length=150,
@@ -40,6 +40,7 @@ class ForgotPasswordForm(forms.Form):
     )
 
 
+# Verify OTP Form
 class VerifyOTPForm(forms.Form):
     code = forms.CharField(
         max_length=6,
@@ -51,6 +52,7 @@ class VerifyOTPForm(forms.Form):
     )
 
 
+# Reset Password Form
 class ResetPasswordForm(forms.Form):
     new_password1 = forms.CharField(
         widget=forms.PasswordInput(attrs={
@@ -73,4 +75,4 @@ class ResetPasswordForm(forms.Form):
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError("Passwords do not match.")
 
-        return cleaned_data    
+        return cleaned_data

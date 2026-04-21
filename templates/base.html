@@ -555,99 +555,91 @@
         <div class="loader"></div>
     </div>
 
-   <!-- Modern Navbar -->
-<nav class="navbar navbar-expand-lg navbar-modern">
-    <div class="container">
-        <!-- CHANGED: This now goes to home page for all users -->
-        <a class="navbar-brand" href="{% url 'home' %}">
-            <i class="fas fa-bell"></i> NotifyHub
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            {% if user.is_authenticated %}
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'dashboard' %}">
-                        <i class="fas fa-chart-pie"></i> Dashboard
-                    </a>
-                </li>
-                
-                {% if user.can_send_notifications %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'notification_create' %}">
-                        <i class="fas fa-plus-circle"></i> New
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'draft_list' %}">
-                        <i class="fas fa-pen"></i> Drafts
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'notification_dashboard' %}">
-                        <i class="fas fa-chart-line"></i> Analytics
-                    </a>
-                </li>
+    <!-- Modern Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-modern">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-bell"></i> NotifyHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                {% if user.is_authenticated %}
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}">
+                            <i class="fas fa-chart-pie"></i> Dashboard
+                        </a>
+                    </li>
+                    
+                    {% if user.can_send_notifications %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'notification_create' %}">
+                            <i class="fas fa-plus-circle"></i> New
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'draft_list' %}">
+                            <i class="fas fa-pen"></i> Drafts
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'notification_dashboard' %}">
+                            <i class="fas fa-chart-line"></i> Analytics
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'notification_list' %}">
+                            <i class="fas fa-bell"></i> Notifications 
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle"></i> {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'profile' %}">
+                                <i class="fas fa-user"></i> Profile
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+                {% else %}
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'student_notifications' %}">
+                            <i class="fas fa-eye"></i> Student Board
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </a>
+                    </li>
+                </ul>
                 {% endif %}
-                
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'notification_list' %}">
-                        <i class="fas fa-bell"></i> Notifications 
-                    </a>
-                </li>
-                
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user-circle"></i> {{ user.username }}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="{% url 'profile' %}">
-                            <i class="fas fa-user"></i> Profile
-                        </a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'logout' %}">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a></li>
-                    </ul>
-                </li>
-            </ul>
-            {% else %}
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'student_notifications' %}">
-                        <i class="fas fa-eye"></i> Student Board
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'login' %}">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </a>
-                </li>
-            </ul>
-            {% endif %}
+            </div>
         </div>
-    </div>
-</nav>
-    <!-- Back Button -->
-    {% if request.path != '/' and request.path != '/accounts/login/' %}
-<div class="container back-button-container">
+    </nav>
 
-    {% if request.resolver_match.url_name == 'profile' %}
-        <!-- ONLY for profile page -->
-        <button onclick="window.location.href='{% url 'dashboard' %}'" class="back-btn">
-            <i class="fas fa-arrow-left"></i> Back
-        </button>
-    {% else %}
-        <!-- For all other pages -->
+    <!-- ===== SINGLE BACK BUTTON - FIXED (No Duplicate) ===== -->
+    {% if request.path != '/' and request.path != '/accounts/login/' %}
+    <div class="container back-button-container mt-3">
         <button onclick="history.back()" class="back-btn">
             <i class="fas fa-arrow-left"></i> Back
         </button>
+    </div>
     {% endif %}
+    <!-- ===== END BACK BUTTON ===== -->
 
-</div>
-{% endif %}
     <!-- Main Content with Page Transition -->
     <div class="container mt-4 page-content">
         {% if messages %}
@@ -741,24 +733,25 @@
                 $(this).removeClass('animate__animated animate__pulse');
             }
         );
+        
         function updateUnreadCount() {
-    fetch('/unread-count/')
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('unread-count').innerText = data.count;
-        });
-    }
-    // Run every 3 seconds
-    setInterval(updateUnreadCount, 1000);
+            fetch('/unread-count/')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('unread-count').innerText = data.count;
+                });
+        }
+        // Run every 3 seconds
+        setInterval(updateUnreadCount, 1000);
 
-    // Run immediately when page loads
-    updateUnreadCount();
+        // Run immediately when page loads
+        updateUnreadCount();
+        
         window.addEventListener("pageshow", function (event) {
             if (event.persisted) {
                 window.location.reload();
             }
         });
-        
     </script>
     
     {% block extra_js %}{% endblock %}

@@ -6,247 +6,882 @@
 
 {% block content %}
 <style>
-    .stat-card {
-        background: white;
-        border-radius: 15px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    :root {
+        --primary: #4361ee;
+        --primary-dark: #3a0ca3;
+        --secondary: #7209b7;
+        --success: #4cc9f0;
+        --warning: #f72585;
+        --accent: #f8961e;
+        --dark: #2b2d42;
+        --gray: #8d99ae;
+        --light: #edf2f4;
+        --white: #ffffff;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.12);
+    }
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    .analytics-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 30px 20px;
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Breadcrumb */
+    .breadcrumb-nav {
+        margin-bottom: 30px;
+        animation: slideInLeft 0.5s ease-out;
+    }
+    
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .breadcrumb-nav a {
+        color: var(--primary);
+        text-decoration: none;
+        font-size: 14px;
+        transition: color 0.3s;
+    }
+    
+    .breadcrumb-nav a:hover {
+        color: var(--primary-dark);
+    }
+    
+    .breadcrumb-nav span {
+        color: var(--gray);
+        font-size: 14px;
+    }
+    
+    .breadcrumb-nav i {
+        margin: 0 8px;
+        font-size: 10px;
+        color: var(--gray);
+    }
+    
+    /* Header */
+    .page-header {
+        margin-bottom: 40px;
+        animation: slideInRight 0.5s ease-out;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .page-header h1 {
+        font-size: 32px;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 8px;
+    }
+    
+    .page-header p {
+        color: var(--gray);
+        font-size: 14px;
+    }
+    
+    /* Stats Card */
+    .stats-card {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 20px;
+        padding: 40px 30px;
+        text-align: center;
+        margin-bottom: 40px;
         position: relative;
         overflow: hidden;
+        transition: all 0.3s ease;
+        animation: pulseGlow 2s ease-in-out infinite;
     }
-    .stat-value {
-        font-size: 2.5em;
-        font-weight: bold;
-        color: #667eea;
-    }
-    .stat-label {
-        color: #666;
-        font-size: 0.9em;
-        text-transform: uppercase;
-    }
-    .progress {
-        height: 10px;
-        border-radius: 5px;
-    }
-    .progress-bar {
-        background: #667eea;
-    }
-    .badge-category {
-        padding: 5px 10px;
-        border-radius: 15px;
-        font-size: 0.8em;
-    }
-    .badge-academic { background: #e3f2fd; color: #1976d2; }
-    .badge-exam { background: #fff3e0; color: #f57c00; }
-    .badge-event { background: #e8f5e9; color: #388e3c; }
-    .badge-holiday { background: #f3e5f5; color: #8e24aa; }
-    .badge-urgent { background: #ffebee; color: #d32f2f; }
-    .badge-general { background: #e0e0e0; color: #424242; }
     
-    .card {
-        border: none;
-        border-radius: 15px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    @keyframes pulseGlow {
+        0%, 100% {
+            box-shadow: 0 10px 30px rgba(67, 97, 238, 0.3);
+        }
+        50% {
+            box-shadow: 0 15px 40px rgba(67, 97, 238, 0.5);
+        }
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1), transparent);
+        animation: rotate 8s linear infinite;
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .stats-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        animation: bounce 2s ease-in-out infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .stats-icon i {
+        font-size: 40px;
+        color: white;
+    }
+    
+    .stats-number {
+        font-size: 48px;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 10px;
+        animation: countUp 1s ease-out;
+    }
+    
+    @keyframes countUp {
+        from {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    .stats-label {
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: rgba(255,255,255,0.9);
+        font-weight: 500;
+    }
+    
+    /* Filter Section */
+    .filter-wrapper {
+        background: white;
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 40px;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        animation: fadeIn 0.7s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+    
+    .filter-wrapper:hover {
+        box-shadow: var(--shadow-hover);
+    }
+    
+    .filter-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .filter-title i {
+        color: var(--primary);
+    }
+    
+    .filter-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
         margin-bottom: 20px;
     }
-    .card-header {
-        background: white;
-        border-bottom: 2px solid #f0f0f0;
-        border-radius: 15px 15px 0 0;
-        padding: 15px 20px;
+    
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+    
+    .filter-group label {
+        font-size: 12px;
+        color: var(--gray);
         font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .filter-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .filter-btn {
+        padding: 8px 20px;
+        border-radius: 30px;
+        border: 2px solid var(--light);
+        background: white;
+        color: var(--gray);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    
+    .filter-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+    
+    .filter-btn.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
+    
+    /* Grid Layout */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 30px;
+        margin-bottom: 40px;
+    }
+    
+    /* Cards */
+    .card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.5s ease-out;
+        animation-fill-mode: both;
+    }
+    
+    .card:nth-child(1) { animation-delay: 0.1s; }
+    .card:nth-child(2) { animation-delay: 0.2s; }
+    .card:nth-child(3) { animation-delay: 0.3s; }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+    }
+    
+    .card-header {
+        padding: 20px 25px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+    }
+    
+    .card-header h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .card-header h3 i {
+        font-size: 20px;
+    }
+    
+    .card-header .badge {
+        background: rgba(255,255,255,0.2);
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        margin-left: 10px;
+    }
+    
+    .card-body {
+        padding: 0;
+        max-height: 450px;
+        overflow-y: auto;
+    }
+    
+    /* Custom Scrollbar */
+    .card-body::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .card-body::-webkit-scrollbar-track {
+        background: var(--light);
+    }
+    
+    .card-body::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 10px;
+    }
+    
+    /* Category Items */
+    .category-item {
+        padding: 18px 25px;
+        border-bottom: 1px solid var(--light);
+        transition: all 0.3s ease;
+        animation: slideIn 0.4s ease-out;
+        animation-fill-mode: both;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .category-item:hover {
+        background: var(--light);
+        transform: translateX(5px);
+    }
+    
+    .category-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    
+    .category-name {
+        font-weight: 600;
+        color: var(--dark);
+        font-size: 14px;
+    }
+    
+    .category-count {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 16px;
+    }
+    
+    .progress {
+        height: 8px;
+        background: var(--light);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .progress-bar-custom {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), var(--success));
+        border-radius: 10px;
+        transition: width 1s ease;
+        animation: progressFill 1s ease-out;
+    }
+    
+    @keyframes progressFill {
+        from { width: 0; }
+    }
+    
+    /* Table Styles */
+    .notification-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .notification-table th {
+        text-align: left;
+        padding: 15px 20px;
+        background: var(--light);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--gray);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 2px solid #e0e0e0;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    .notification-table td {
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--light);
+        font-size: 13px;
+        transition: all 0.3s ease;
+    }
+    
+    .notification-table tr {
+        transition: all 0.3s ease;
+        animation: fadeIn 0.4s ease-out;
+        animation-fill-mode: both;
+        cursor: pointer;
+    }
+    
+    .notification-table tr:hover {
+        background: var(--light);
+        transform: scale(1.01);
+        cursor: pointer;
+    }
+    
+    .notification-title {
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 4px;
+    }
+    
+    .notification-meta {
+        font-size: 11px;
+        color: var(--gray);
+    }
+    
+    .category-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+    
+    .category-academic { background: #e3f2fd; color: #1976d2; }
+    .category-exam { background: #fff3e0; color: #f57c00; }
+    .category-event { background: #e8f5e9; color: #388e3c; }
+    .category-holiday { background: #f3e5f5; color: #8e24aa; }
+    .category-urgent { background: #ffebee; color: #d32f2f; }
+    .category-general { background: #eceff1; color: #546e7a; }
+    
+    /* View Link Badge */
+    .view-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--primary);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 11px;
+        transition: all 0.3s ease;
+    }
+    
+    .view-badge i {
+        font-size: 11px;
+    }
+    
+    .notification-table tr:hover .view-badge {
+        background: var(--primary-dark);
+        transform: translateX(3px);
+    }
+    
+    /* Activity Items */
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px 25px;
+        border-bottom: 1px solid var(--light);
+        transition: all 0.3s ease;
+        animation: slideInRight 0.4s ease-out;
+        animation-fill-mode: both;
+    }
+    
+    .activity-item:hover {
+        background: var(--light);
+        transform: translateX(-5px);
+    }
+    
+    .activity-icon {
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .activity-icon i {
+        color: white;
+        font-size: 18px;
+    }
+    
+    .activity-content {
+        flex: 1;
+    }
+    
+    .activity-user {
+        font-weight: 600;
+        color: var(--dark);
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+    
+    .activity-text {
+        font-size: 12px;
+        color: var(--gray);
+    }
+    
+    .activity-time {
+        font-size: 11px;
+        color: var(--gray);
+        white-space: nowrap;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+    
+    .empty-state i {
+        font-size: 48px;
+        color: var(--light);
+        margin-bottom: 15px;
+    }
+    
+    .empty-state p {
+        color: var(--gray);
+        font-size: 14px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .stats-number {
+            font-size: 36px;
+        }
+        
+        .page-header h1 {
+            font-size: 24px;
+        }
+        
+        .notification-table th,
+        .notification-table td {
+            padding: 10px 12px;
+            font-size: 11px;
+        }
+        
+        .card-body {
+            max-height: 350px;
+        }
     }
 </style>
 
-<div class="container-fluid px-4">
+<div class="analytics-container">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-nav">
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Analytics</span>
+    </div>
+    
     <!-- Header -->
-    <div class="row mb-4">
-        <div class="col">
-            <h2>
-                <i class="bi bi-graph-up" style="color: #667eea;"></i> 
-                {% if is_principal %}
-                    Principal's Dashboard
-                {% else %}
-                    Teacher's Dashboard
-                {% endif %}
-            </h2>
-        </div>
-        <div class="col text-end">
-            <a href="{% url 'notification_list' %}" class="btn btn-outline-primary">
-                <i class="bi bi-arrow-left"></i> Back
-            </a>
-        </div>
+    <div class="page-header">
+        <h1>Analytics Dashboard</h1>
+        <p>Track your notification performance and user engagement</p>
     </div>
-
-    <!-- Summary Cards -->
-    <div class="row">
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value">{{ total_notifications|default:"0" }}</div>
-                <div class="stat-label">Total Notifications</div>
+    
+    <!-- Stats Card -->
+    <div class="stats-card">
+        <div class="stats-icon">
+            <i class="fas fa-bell"></i>
+        </div>
+        <div class="stats-number">{{ total_notifications|default:"0" }}</div>
+        <div class="stats-label">Total Notifications</div>
+    </div>
+    
+    <!-- Filter Section -->
+    <div class="filter-wrapper">
+        <div class="filter-title">
+            <i class="fas fa-sliders-h"></i>
+            Filter & Sort
+        </div>
+        <div class="filter-group">
+            <label>Category</label>
+            <div class="filter-buttons" id="categoryFilters">
+                <button class="filter-btn active" data-category="all">All</button>
+                <button class="filter-btn" data-category="academic">Academic</button>
+                <button class="filter-btn" data-category="exam">Exam</button>
+                <button class="filter-btn" data-category="event">Event</button>
+                <button class="filter-btn" data-category="holiday">Holiday</button>
+                <button class="filter-btn" data-category="urgent">Urgent</button>
+                <button class="filter-btn" data-category="general">General</button>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value">{{ read_stats|length|default:"0" }}</div>
-                <div class="stat-label">Last 30 Days</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value">
-                    {% if read_stats %}
-                        {% with max_read=read_stats|dictsort:"read_percentage"|last %}
-                            {{ max_read.read_percentage|default:"0" }}%
-                        {% endwith %}
-                    {% else %}
-                        0%
-                    {% endif %}
-                </div>
-                <div class="stat-label">Best Read Rate</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value">
-                    {% if read_stats.0.total_students %}
-                        {{ read_stats.0.total_students }}
-                    {% else %}
-                        0
-                    {% endif %}
-                </div>
-                <div class="stat-label">Total Students</div>
+        <div class="filter-group">
+            <label>Date Range</label>
+            <div class="filter-buttons" id="dateFilters">
+                <button class="filter-btn active" data-days="all">All Time</button>
+                <button class="filter-btn" data-days="7">Last 7 Days</button>
+                <button class="filter-btn" data-days="30">Last 30 Days</button>
+                <button class="filter-btn" data-days="90">Last 90 Days</button>
             </div>
         </div>
     </div>
-
-    <!-- Category Distribution -->
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <i class="bi bi-pie-chart"></i> Notifications by Category
-                </div>
-                <div class="card-body">
-                    {% if category_stats %}
-                        {% for stat in category_stats %}
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between">
-                                <span class="badge-category badge-{{ stat.category }}">
-                                    {% if stat.category == 'academic' %}📚 Academic
-                                    {% elif stat.category == 'exam' %}📝 Exam
-                                    {% elif stat.category == 'event' %}🎉 Event
-                                    {% elif stat.category == 'holiday' %}🏖️ Holiday
-                                    {% elif stat.category == 'urgent' %}⚠️ Urgent
-                                    {% else %}📢 General
-                                    {% endif %}
-                                </span>
-                                <span>{{ stat.count }}</span>
-                            </div>
-                            <div class="progress mt-2">
-                                {% widthratio stat.count total_notifications 100 as width %}
-                                <div class="progress-bar" style="width: {{ width }}%"></div>
-                            </div>
+    
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+        <!-- Categories Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <i class="fas fa-chart-pie"></i>
+                    Categories
+                    <span class="badge">{{ category_stats|length }} Types</span>
+                </h3>
+            </div>
+            <div class="card-body">
+                {% if category_stats %}
+                    {% for stat in category_stats %}
+                    <div class="category-item" style="animation-delay: {{ forloop.counter0|divisibleby:10 }}s;">
+                        <div class="category-info">
+                            <span class="category-name">
+                                {% if stat.category == 'academic' %}📚 Academic
+                                {% elif stat.category == 'exam' %}📝 Exam
+                                {% elif stat.category == 'event' %}🎉 Event
+                                {% elif stat.category == 'holiday' %}🏖️ Holiday
+                                {% elif stat.category == 'urgent' %}⚠️ Urgent
+                                {% else %}📢 General
+                                {% endif %}
+                            </span>
+                            <span class="category-count">{{ stat.count }}</span>
                         </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-muted">No data available</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Activity -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <i class="bi bi-clock-history"></i> Recent Reads
-                </div>
-                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
-                    {% if recent_activity %}
-                        {% for activity in recent_activity %}
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="me-3">
-                                <i class="bi bi-person-circle" style="font-size: 1.5em; color: #667eea;"></i>
-                            </div>
-                            <div>
-                                <strong>{{ activity.user.username }}</strong>
-                                <small class="d-block text-muted">
-                                    read "{{ activity.notification.title|truncatechars:30 }}"
-                                </small>
-                                <small class="text-muted">{{ activity.read_at|timesince }} ago</small>
-                            </div>
+                        <div class="progress">
+                            <div class="progress-bar-custom" style="width: {% widthratio stat.count total_notifications 100 %}%"></div>
                         </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-muted">No recent activity</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Read Rate Table -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <i class="bi bi-table"></i> Notification Read Rates
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Date</th>
-                                    <th>Category</th>
-                                    <th>Read</th>
-                                    <th>Unread</th>
-                                    <th>Rate</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for stat in read_stats %}
-                                <tr>
-                                    <td>
-                                        <a href="{% url 'notification_detail' stat.id %}">
-                                            {{ stat.title|truncatechars:40 }}
-                                        </a>
-                                    </td>
-                                    <td>{{ stat.created_at|date:"M d, Y" }}</td>
-                                    <td>
-                                        <span class="badge-category badge-{{ stat.category }}">
-                                            {{ stat.get_category_display }}
-                                        </span>
-                                    </td>
-                                    <td class="text-success">{{ stat.read_count }}</td>
-                                    <td class="text-danger">{{ stat.unread_count }}</td>
-                                    <td>
-                                        <strong>{{ stat.read_percentage }}%</strong>
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'notification_stats' stat.id %}" class="btn btn-sm btn-outline-info">
-                                            Details
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="7" class="text-center">No notifications found</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
                     </div>
-                </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-chart-pie"></i>
+                        <p>No data available</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Notifications List Card (Removed Read Count) -->
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <i class="fas fa-list"></i>
+                    All Notifications
+                    <span class="badge">{{ read_stats|length }} Items</span>
+                </h3>
+            </div>
+            <div class="card-body">
+                {% if read_stats %}
+                    <table class="notification-table">
+                        <thead>
+                            <tr>
+                                <th>Notification Details</th>
+                                <th>Category</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="notificationTableBody">
+                            {% for stat in read_stats %}
+                            <tr data-category="{{ stat.category }}" data-date="{{ stat.created_at|date:'Y-m-d' }}" data-notification-id="{{ stat.id }}" style="animation-delay: {{ forloop.counter0|divisibleby:20 }}s;">
+                                <td>
+                                    <div class="notification-title">{{ stat.title|truncatechars:40 }}</div>
+                                    <div class="notification-meta">{{ stat.created_at|date:"M d, Y" }}</div>
+                                </td>
+                                <td>
+                                    <span class="category-badge category-{{ stat.category }}">
+                                        {{ stat.get_category_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="view-badge">
+                                        <i class="fas fa-arrow-right"></i>
+                                        View
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No notifications found</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Recent Activity Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <i class="fas fa-history"></i>
+                    Recent Activity
+                    <span class="badge">{{ recent_activity|length }} Events</span>
+                </h3>
+            </div>
+            <div class="card-body">
+                {% if recent_activity %}
+                    {% for activity in recent_activity %}
+                    <div class="activity-item" style="animation-delay: {{ forloop.counter0|divisibleby:30 }}s;">
+                        <div class="activity-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-user">{{ activity.user.get_full_name|default:activity.user.username }}</div>
+                            <div class="activity-text">Read "{{ activity.notification.title|truncatechars:45 }}"</div>
+                        </div>
+                        <div class="activity-time">{{ activity.read_at|timesince }} ago</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <p>No recent activity</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let currentCategory = 'all';
+        let currentDays = 'all';
+        
+        const categoryBtns = document.querySelectorAll('#categoryFilters .filter-btn');
+        const dateBtns = document.querySelectorAll('#dateFilters .filter-btn');
+        const tableRows = document.querySelectorAll('#notificationTableBody tr');
+        
+        function filterTable() {
+            tableRows.forEach(row => {
+                const rowCategory = row.getAttribute('data-category');
+                const rowDate = new Date(row.getAttribute('data-date'));
+                const now = new Date();
+                
+                let categoryMatch = currentCategory === 'all' || rowCategory === currentCategory;
+                let dateMatch = true;
+                
+                if (currentDays !== 'all') {
+                    const daysAgo = parseInt(currentDays);
+                    const cutoffDate = new Date();
+                    cutoffDate.setDate(now.getDate() - daysAgo);
+                    dateMatch = rowDate >= cutoffDate;
+                }
+                
+                if (categoryMatch && dateMatch) {
+                    row.style.display = '';
+                    row.style.animation = 'fadeIn 0.4s ease-out';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        categoryBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                categoryBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentCategory = this.getAttribute('data-category');
+                filterTable();
+            });
+        });
+        
+        dateBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                dateBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentDays = this.getAttribute('data-days');
+                filterTable();
+            });
+        });
+        
+        // Make rows clickable - Navigate to notification detail
+        tableRows.forEach(row => {
+            row.addEventListener('click', function(e) {
+                // Prevent if clicking on view badge (it's the same action anyway)
+                e.stopPropagation();
+                const notificationId = this.getAttribute('data-notification-id');
+                const notificationTitle = this.querySelector('.notification-title')?.textContent;
+                
+                if (notificationId) {
+                    // Add click animation
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                        // Redirect to notification detail page
+                        // Update the URL pattern based on your Django URL configuration
+                        window.location.href = "{% url 'notification_detail' 0 %}".replace('0', notificationId);
+                    }, 150);
+                } else if (notificationTitle) {
+                    // Fallback alert if no ID is available
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                        alert('🔔 Opening: ' + notificationTitle + '\n\n(Add notification_detail URL to enable navigation)');
+                    }, 150);
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}
-        
-        
-          

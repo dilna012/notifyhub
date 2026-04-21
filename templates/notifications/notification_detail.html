@@ -84,9 +84,13 @@
                     </button>
                 </form>
                 {% else %}
+                <!-- ===== VIEW STATISTICS BUTTON - ONLY SHOW IF SENT TO TEACHERS OR STAFF ===== -->
+                {% if notification.send_to_teachers or notification.send_to_staff %}
                 <a href="{% url 'notification_stats' notification.id %}" class="btn btn-info w-100 mb-2">
                     <i class="bi bi-graph-up"></i> View Statistics
                 </a>
+                {% endif %}
+                <!-- ===== END VIEW STATISTICS BUTTON CONDITION ===== -->
                 {% endif %}
                 
                 <!-- DELETE BUTTON - Only appears for the sender -->

@@ -10,6 +10,7 @@ from django.utils.dateparse import parse_datetime
 from datetime import timedelta, datetime
 import json
 import csv
+from django.db.models import Count
 
 from .models import Notification, ReadStatus
 from .forms import NotificationForm
@@ -39,6 +40,7 @@ def home_page(request):
     }
     
     return render(request, 'home.html', context)
+
 # ===== STUDENT PUBLIC VIEWS =====
 def student_notifications(request):
     """Public page for students to view all notifications"""
@@ -299,7 +301,7 @@ def notification_detail(request, pk):
     notification = get_object_or_404(Notification, pk=pk)
     
     # Check if user has permission to view this notification
-    if request.user.role in ['staff', 'teacher']:  # Added teacher here
+    if request.user.role in ['staff', 'teacher']:
         if notification.is_draft:
             messages.error(request, "You cannot view draft notifications.")
             return redirect('notification_list')
@@ -342,11 +344,11 @@ def draft_list(request):
     
     return render(request, 'notifications/draft_list.html', {'drafts': drafts})
 
-# ===== NOTIFICATION STATS VIEW =====
+# ===== NOTIFICATION STATS VIEW (UPDATED - Only for Teacher/Staff notifications) =====
 @login_required
 @sender_required
 def notification_stats(request, pk):
-    """View read statistics for a notification"""
+    """View read statistics - Only for notifications sent to Teachers/Staff"""
     try:
         notification = get_object_or_404(Notification, pk=pk)
         
@@ -355,38 +357,35 @@ def notification_stats(request, pk):
             messages.error(request, "You can only view stats for your own notifications.")
             return redirect('notification_list')
         
-        # Get read status
+        # ===== CHECK IF NOTIFICATION WAS SENT TO TEACHERS OR STAFF =====
+        # If notification is only sent to students, show error and redirect
+        if not notification.send_to_teachers and not notification.send_to_staff:
+            messages.error(request, "Statistics are not available for student-only notifications.")
+            return redirect('notification_detail', pk=pk)
+        
+        # Get all read statuses for this notification
         read_statuses = ReadStatus.objects.filter(
             notification=notification
         ).select_related('user')
         
-        total_students = User.objects.filter(role='student').count()
-        read_count = read_statuses.filter(is_read=True).count()
-        unread_count = read_statuses.filter(is_read=False).count()
+        # Only get Teachers and Staff who have read (exclude Students)
+        read_users = []
+        for status in read_statuses.filter(is_read=True).order_by('-read_at'):
+            if status.user.role in ['teacher', 'staff']:
+                read_users.append({
+                    'username': status.user.username,
+                    'full_name': status.user.get_full_name(),
+                    'email': status.user.email,
+                    'role': status.user.get_role_display(),
+                    'read_at': status.read_at,
+                })
         
-        if total_students > 0:
-            read_percentage = (read_count / total_students * 100)
-            unread_percentage = (unread_count / total_students * 100)
-        else:
-            read_percentage = 0
-            unread_percentage = 0
-        
-        read_user_ids = read_statuses.filter(is_read=True).values_list('user_id', flat=True)
-        unread_students = User.objects.filter(
-            role='student'
-        ).exclude(
-            id__in=read_user_ids
-        )[:20]
+        read_count = len(read_users)
         
         context = {
             'notification': notification,
-            'read_statuses': read_statuses[:50],
-            'total_students': total_students,
             'read_count': read_count,
-            'unread_count': unread_count,
-            'read_percentage': round(read_percentage, 1),
-            'unread_percentage': round(unread_percentage, 1),
-            'unread_students': unread_students,
+            'read_users': read_users,
         }
         
         return render(request, 'notifications/notification_stats.html', context)
@@ -395,8 +394,6 @@ def notification_stats(request, pk):
         messages.error(request, f"An error occurred: {str(e)}")
         return redirect('notification_list')
 
-
-# ===== ANALYTICS DASHBOARD =====
 @login_required
 def notification_dashboard(request):
     """Statistics dashboard for teachers and principal"""
@@ -405,6 +402,9 @@ def notification_dashboard(request):
         notifications = Notification.objects.filter(is_draft=False)
     else:
         notifications = Notification.objects.filter(sender=request.user, is_draft=False)
+    
+    # Get all notifications for the table
+    all_notifications = notifications.order_by('-created_at')
     
     # Recent activity
     recent_activity = ReadStatus.objects.filter(
@@ -417,48 +417,44 @@ def notification_dashboard(request):
         count=Count('id')
     ).order_by('-count')
     
-    # Daily stats for last 7 days
-    daily_stats = []
-    for i in range(7):
-        day = timezone.now() - timedelta(days=i)
-        count = notifications.filter(
-            created_at__date=day.date()
-        ).count()
-        daily_stats.append({
-            'date': day.strftime('%A'),
-            'count': count
-        })
-    
-    # Read stats for each notification
+    # ===== READ STATS FOR EACH NOTIFICATION =====
     read_stats = []
-    for notification in notifications.order_by('-created_at')[:10]:
-        total_students = User.objects.filter(role='student').count()
+    for notification in all_notifications[:50]:  # Limit to last 50
+        total_recipients = 0
+        if notification.send_to_students:
+            total_recipients += User.objects.filter(role='student', is_active=True).count()
+        if notification.send_to_teachers:
+            total_recipients += User.objects.filter(role='teacher', is_active=True).count()
+        if notification.send_to_staff:
+            total_recipients += User.objects.filter(role='staff', is_active=True).count()
+        
         read_count = ReadStatus.objects.filter(
             notification=notification, 
             is_read=True
         ).count()
+        
+        read_percentage = round((read_count / total_recipients * 100), 1) if total_recipients > 0 else 0
+        
         read_stats.append({
             'id': notification.id,
             'title': notification.title,
             'category': notification.category,
             'get_category_display': notification.get_category_display(),
             'created_at': notification.created_at,
-            'total_students': total_students,
             'read_count': read_count,
-            'unread_count': total_students - read_count,
-            'read_percentage': round((read_count / total_students * 100) if total_students > 0 else 0, 1)
+            'read_percentage': read_percentage,
         })
     
     context = {
         'total_notifications': notifications.count(),
         'category_stats': category_stats,
         'recent_activity': recent_activity,
-        'daily_stats': daily_stats,
-        'read_stats': read_stats,
+        'read_stats': read_stats,  # Make sure this is passed
         'is_principal': request.user.role == 'principal',
     }
     
     return render(request, 'notifications/dashboard_stats.html', context)
+
 # ===== NOTIFICATION DELETE VIEW =====
 @login_required
 def notification_delete(request, pk):
@@ -531,9 +527,7 @@ def edit_draft(request, pk):
                 notification.updated_at = timezone.now()
                 notification.save()
 
-               # In notifications/views.py — replace set_reminder view
-
-# In notifications/views.py — replace set_reminder view
+    return redirect('draft_list')
 
 @login_required
 def set_reminder(request, pk):
@@ -630,4 +624,3 @@ def toggle_pin_notification(request, pk):
 
     read_status.save()
     return redirect(request.META.get('HTTP_REFERER', 'notification_list'))
-    

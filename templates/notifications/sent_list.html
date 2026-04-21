@@ -48,9 +48,13 @@
                         <a href="{% url 'notification_detail' item.notification.id %}" class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-eye"></i> View
                         </a>
+                        <!-- ===== STATS BUTTON - ONLY SHOW IF SENT TO TEACHERS OR STAFF ===== -->
+                        {% if item.notification.send_to_teachers or item.notification.send_to_staff %}
                         <a href="{% url 'notification_stats' item.notification.id %}" class="btn btn-sm btn-outline-info">
                             <i class="fas fa-chart-bar"></i> Stats
                         </a>
+                        {% endif %}
+                        <!-- ===== END STATS BUTTON CONDITION ===== -->
                         <button type="button" class="btn btn-sm btn-outline-danger"
                                 onclick="confirmDelete('{{ item.notification.id }}', '{{ item.notification.title|escapejs }}')">
                             <i class="fas fa-trash"></i> Delete
