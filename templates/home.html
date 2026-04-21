@@ -2,370 +2,911 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Welcome - Nehru Arts And Science College Kanhangad{% endblock %}
+{% block title %}Nehru Arts And Science College Kanhangad{% endblock %}
 
 {% block content %}
 <style>
-    /* College Colors - Professional Blue Theme */
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&display=swap');
+    
     :root {
-        --primary-color: #003366; /* Dark Blue */
-        --secondary-color: #FFD700; /* Gold */
-        --accent-color: #1e4d8c; /* Medium Blue */
-        --light-bg: #f5f8fc;
-        --text-dark: #2c3e50;
-        --text-light: #6c757d;
+        --primary-blue: #4A7B9D;
+        --primary-blue-dark: #3A6380;
+        --primary-blue-light: #6B96B5;
+        --accent-gold: #D4AF37;
+        --accent-gold-light: #F0C040;
+        --accent-gold-dark: #B8960C;
+        --white: #FFFFFF;
+        --light-bg: #F5F8FC;
+        --text-dark: #2C3E50;
+        --text-light: #6B7F8F;
+        --shadow-sm: 0 5px 20px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.12);
+        --shadow-hover: 0 25px 50px rgba(212, 175, 55, 0.25);
+        --gradient-gold: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+        --gradient-blue: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-light));
+    }
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
     }
     
     body {
+        font-family: 'Poppins', sans-serif;
+        overflow-x: hidden;
         background: var(--light-bg);
     }
     
-    /* Hero Section with College Image */
-    .hero-section {
-        background: linear-gradient(rgba(0, 51, 102, 0.7), rgba(0, 51, 102, 0.7)), 
-                    url("{% static 'images/college-bg.jpg' %}");
-        background-size: cover;
-        background-position: center;
-        color: white;
-        padding: 100px 0;
-        text-align: center;
-        border-bottom: 5px solid var(--secondary-color);
+    /* ===== PAGE TRANSITION ===== */
+    .page-transition {
+        animation: pageReveal 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    .college-logo {
-        width: 80px;
-        height: 80px;
-        background: white;
+    @keyframes pageReveal {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* ===== HERO SECTION WITH CLEAR BACKGROUND ===== */
+    .hero-section {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    
+    .hero-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('{% static "images/college-bg.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        z-index: 0;
+        animation: slowZoom 20s ease-out infinite alternate;
+        transform-origin: center;
+    }
+    
+    @keyframes slowZoom {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.08); }
+    }
+    
+    /* Content directly on image - NO BACKGROUND */
+    .hero-content {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+        padding: 0 20px;
+        max-width: 1000px;
+        margin: 0 auto;
+        animation: contentFloat 1s ease-out;
+    }
+    
+    @keyframes contentFloat {
+        0% { opacity: 0; transform: translateY(50px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    .hero-badge {
+        display: inline-block;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(8px);
+        padding: 8px 24px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--accent-gold);
+        letter-spacing: 2px;
+        margin-bottom: 25px;
+        border: 1px solid rgba(212, 175, 55, 0.4);
+        animation: badgePulse 2s infinite;
+    }
+    
+    @keyframes badgePulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.8; transform: scale(1.02); }
+    }
+    
+    .hero-logo {
+        width: 100px;
+        height: 100px;
+        background: var(--white);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        border: 3px solid var(--secondary-color);
+        margin: 0 auto 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        border: 3px solid var(--accent-gold);
+        animation: logoFloat 3s ease-in-out infinite, logoBounce 0.8s ease;
     }
     
-    .college-logo i {
-        font-size: 40px;
-        color: var(--primary-color);
+    @keyframes logoFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
     }
     
-    .college-name {
-        font-size: 3rem;
-        font-weight: 700;
-        margin-bottom: 10px;
+    @keyframes logoBounce {
+        0% { opacity: 0; transform: scale(0.3); }
+        50% { opacity: 1; transform: scale(1.05); }
+        70% { transform: scale(0.95); }
+        100% { transform: scale(1); }
+    }
+    
+    .hero-logo i {
+        font-size: 48px;
+        color: var(--accent-gold);
+        transition: transform 0.3s ease;
+    }
+    
+    .hero-logo:hover i {
+        transform: scale(1.1);
+    }
+    
+    .hero-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: var(--white);
+        margin-bottom: 15px;
         letter-spacing: 1px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        line-height: 1.3;
+        animation: titleGlow 3s ease-in-out infinite;
     }
     
-    .college-location {
-        font-size: 1.3rem;
-        opacity: 0.95;
-        margin-bottom: 20px;
+    @keyframes titleGlow {
+        0%, 100% { text-shadow: 2px 2px 8px rgba(0,0,0,0.5); }
+        50% { text-shadow: 2px 2px 15px rgba(212, 175, 55, 0.3); }
+    }
+    
+    @media (min-width: 768px) {
+        .hero-title {
+            font-size: 3.2rem;
+        }
+    }
+    
+    @media (min-width: 992px) {
+        .hero-title {
+            font-size: 4rem;
+        }
+    }
+    
+    .hero-title span {
+        color: var(--accent-gold);
+        font-weight: 700;
+        position: relative;
+        display: inline-block;
+        animation: textGlow 2s ease-in-out infinite;
+    }
+    
+    @keyframes textGlow {
+        0%, 100% { text-shadow: 0 0 0px rgba(212, 175, 55, 0); }
+        50% { text-shadow: 0 0 20px rgba(212, 175, 55, 0.5); }
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.95);
+        max-width: 550px;
+        margin: 0 auto 30px;
+        line-height: 1.7;
+        font-weight: 400;
+        text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+    }
+    
+    @media (min-width: 768px) {
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
     }
     
     .hero-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
         margin-top: 30px;
     }
     
-    .btn-primary-custom {
-        background: var(--secondary-color);
-        color: var(--primary-color);
-        padding: 12px 30px;
+    @media (min-width: 576px) {
+        .hero-buttons {
+            flex-direction: row;
+            justify-content: center;
+            gap: 25px;
+        }
+    }
+    
+    .btn-primary {
+        background: var(--white);
+        color: var(--primary-blue);
+        padding: 14px 38px;
         border-radius: 50px;
-        font-weight: 600;
-        font-size: 1.1rem;
-        border: none;
-        transition: all 0.3s ease;
-        margin: 0 10px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-    }
-    
-    .btn-primary-custom:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        background: #ffd700;
-        color: var(--primary-color);
-    }
-    
-    .btn-outline-custom {
-        background: transparent;
-        color: white;
-        padding: 12px 30px;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 1.1rem;
-        border: 2px solid white;
-        transition: all 0.3s ease;
-        margin: 0 10px;
-    }
-    
-    .btn-outline-custom:hover {
-        background: white;
-        color: var(--primary-color);
-        transform: translateY(-3px);
-    }
-    
-    /* Section Titles */
-    .section-title {
-        text-align: center;
-        margin-bottom: 50px;
-    }
-    
-    .section-title h2 {
-        font-size: 2.5rem;
         font-weight: 700;
-        color: var(--primary-color);
-        position: relative;
+        font-size: 1rem;
+        border: none;
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        text-decoration: none;
         display: inline-block;
-        padding-bottom: 15px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        min-width: 200px;
+        text-align: center;
     }
     
-    .section-title h2:after {
+    .btn-primary::before {
         content: '';
         position: absolute;
-        bottom: 0;
+        top: 50%;
         left: 50%;
-        transform: translateX(-50%);
-        width: 80px;
-        height: 4px;
-        background: var(--secondary-color);
-        border-radius: 2px;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+        z-index: -1;
     }
     
-    /* Welcome Card */
-    .welcome-card {
-        background: white;
-        border-radius: 20px;
-        padding: 50px;
-        box-shadow: 0 20px 40px rgba(0, 51, 102, 0.15);
-        margin: 50px 0;
-        border: 1px solid rgba(0, 51, 102, 0.1);
+    .btn-primary:hover::before {
+        width: 300px;
+        height: 300px;
     }
     
-    .welcome-title {
-        font-size: 2rem;
+    .btn-primary:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 30px rgba(212, 175, 55, 0.3);
+        color: var(--white);
+    }
+    
+    .btn-outline {
+        background: transparent;
+        color: var(--white);
+        padding: 14px 38px;
+        border-radius: 50px;
         font-weight: 700;
-        color: var(--primary-color);
-        margin-bottom: 20px;
+        font-size: 1rem;
+        border: 2px solid var(--accent-gold);
+        transition: all 0.4s ease;
+        text-decoration: none;
+        display: inline-block;
+        min-width: 200px;
+        text-align: center;
+        backdrop-filter: blur(5px);
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
     }
     
-    .welcome-text {
-        color: var(--text-light);
-        font-size: 1.2rem;
-        line-height: 1.8;
+    .btn-outline:hover {
+        background: var(--accent-gold);
+        color: var(--primary-blue);
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 30px rgba(212, 175, 55, 0.3);
+    }
+    
+    /* ===== STATS SECTION ===== */
+    .stats-section {
+        background: var(--white);
+        padding: 60px 20px;
+        position: relative;
+        margin-top: -50px;
+        z-index: 20;
+        border-radius: 35px;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    @media (min-width: 768px) {
+        .stats-section {
+            padding: 70px 0;
+        }
+    }
+    
+    .stats-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
         max-width: 800px;
         margin: 0 auto;
+        justify-content: center;
     }
     
-    /* Stats Section */
-    .stats-section {
-        background: var(--primary-color);
-        color: white;
-        padding: 60px 0;
-        margin: 50px 0;
-        border-radius: 10px;
+    @media (min-width: 768px) {
+        .stats-grid {
+            flex-direction: row;
+            gap: 60px;
+        }
     }
     
     .stat-item {
         text-align: center;
-        padding: 20px;
+        padding: 30px 25px;
+        background: var(--light-bg);
+        border-radius: 25px;
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        flex: 1;
+        cursor: pointer;
+        border: 1px solid rgba(75, 123, 157, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-item::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: var(--gradient-gold);
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+    }
+    
+    .stat-item:hover::after {
+        transform: scaleX(1);
+    }
+    
+    .stat-item:hover {
+        transform: translateY(-15px) scale(1.03);
+        background: var(--white);
+        box-shadow: var(--shadow-hover);
+        border-color: var(--accent-gold);
     }
     
     .stat-number {
         font-size: 2.8rem;
         font-weight: 800;
+        color: var(--primary-blue);
         margin-bottom: 10px;
-        color: var(--secondary-color);
-        animation: fadeInUp 0.8s ease;
+        font-family: 'Playfair Display', serif;
+        transition: all 0.3s ease;
     }
     
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
+    .stat-item:hover .stat-number {
+        color: var(--accent-gold);
+        transform: scale(1.05);
+    }
+    
+    @media (min-width: 768px) {
+        .stat-number {
+            font-size: 3.5rem;
         }
     }
     
     .stat-label {
-        font-size: 1.1rem;
+        font-size: 0.85rem;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        opacity: 0.9;
+        letter-spacing: 2px;
+        color: var(--text-light);
+        font-weight: 500;
     }
     
-    /* CTA Section */
-    .cta-section {
-        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-        color: white;
-        padding: 70px 0;
+    /* ===== FEATURES SECTION ===== */
+    .features-section {
+        padding: 80px 20px;
+        background: var(--light-bg);
+    }
+    
+    @media (min-width: 768px) {
+        .features-section {
+            padding: 100px 0;
+        }
+    }
+    
+    .section-header {
         text-align: center;
-        border-radius: 15px;
-        margin: 50px 0;
+        max-width: 700px;
+        margin: 0 auto 60px;
+    }
+    
+    .section-badge {
+        display: inline-block;
+        background: rgba(212, 175, 55, 0.1);
+        padding: 6px 20px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--accent-gold);
+        letter-spacing: 2px;
+        margin-bottom: 20px;
+        animation: badgePulse 2s infinite;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 20px;
+        font-family: 'Playfair Display', serif;
+        line-height: 1.3;
+    }
+    
+    @media (min-width: 768px) {
+        .section-title {
+            font-size: 2.5rem;
+        }
+    }
+    
+    .section-subtitle {
+        color: var(--text-light);
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 25px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    @media (min-width: 640px) {
+        .features-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+        }
+    }
+    
+    @media (min-width: 992px) {
+        .features-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 35px;
+        }
+    }
+    
+    .feature-card {
+        background: var(--white);
+        padding: 35px 25px;
+        border-radius: 25px;
+        text-align: center;
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid rgba(75, 123, 157, 0.08);
+        cursor: pointer;
+    }
+    
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-gold);
+        transform: scaleX(0);
+        transition: transform 0.5s ease;
+        transform-origin: left;
+    }
+    
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-15px);
+        box-shadow: var(--shadow-hover);
+        border-color: var(--accent-gold);
+    }
+    
+    .feature-icon {
+        width: 75px;
+        height: 75px;
+        background: linear-gradient(135deg, rgba(75, 123, 157, 0.1), rgba(212, 175, 55, 0.05));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+        transition: all 0.5s ease;
+    }
+    
+    .feature-card:hover .feature-icon {
+        background: var(--gradient-gold);
+        transform: rotateY(360deg) scale(1.1);
+    }
+    
+    .feature-icon i {
+        font-size: 32px;
+        color: var(--accent-gold);
+        transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover .feature-icon i {
+        color: var(--white);
+        transform: scale(1.1);
+    }
+    
+    .feature-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 12px;
+        transition: color 0.3s ease;
+    }
+    
+    .feature-card:hover .feature-title {
+        color: var(--accent-gold);
+    }
+    
+    .feature-text {
+        color: var(--text-light);
+        line-height: 1.6;
+        font-size: 0.85rem;
+    }
+    
+    /* ===== CTA SECTION ===== */
+    .cta-section {
+    background: linear-gradient(135deg, #9b5cce, #5114c4);
+    padding: 70px 20px;
+    position: relative;
+    overflow: hidden;
+    margin: 50px 0 0 0;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
+}
+    .cta-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(8, 81, 216, 0.15), transparent);
+        animation: rotateBg 25s linear infinite;
+    }
+    
+    @keyframes rotateBg {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .cta-section::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(116, 206, 14, 0.2), transparent);
+        animation: shine 3s infinite;
+    }
+    
+    @keyframes shine {
+        0% { left: -100%; }
+        20%, 100% { left: 100%; }
+    }
+    
+    .cta-content {
+        text-align: center;
+        max-width: 750px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
     }
     
     .cta-title {
-        font-size: 2.2rem;
-        font-weight: 700;
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--white);
         margin-bottom: 20px;
+        font-family: 'Playfair Display', serif;
+        animation: titlePulse 2s ease-in-out infinite;
     }
     
-    .cta-button {
-        background: var(--secondary-color);
-        color: var(--primary-color);
-        padding: 15px 40px;
+    @keyframes titlePulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+    
+    @media (min-width: 768px) {
+        .cta-title {
+            font-size: 2.5rem;
+        }
+    }
+    
+    .cta-text {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.95);
+        margin-bottom: 35px;
+        line-height: 1.7;
+    }
+    
+    @media (min-width: 768px) {
+        .cta-text {
+            font-size: 1.1rem;
+        }
+    }
+    
+    .btn-cta {
+        background: var(--white);
+        color: var(--primary-blue);
+        padding: 14px 40px;
         border-radius: 50px;
-        font-size: 1.2rem;
-        font-weight: 600;
+        font-weight: 700;
+        font-size: 1rem;
         text-decoration: none;
         display: inline-block;
-        transition: all 0.3s ease;
-        border: none;
-        margin: 10px;
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        margin: 0 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        min-width: 200px;
+        position: relative;
+        overflow: hidden;
     }
     
-    .cta-button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        background: #ffd700;
+    .btn-cta::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+        z-index: -1;
     }
     
-    .cta-button-outline {
+    .btn-cta:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .btn-cta:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 20px 40px rgba(212, 175, 55, 0.3);
+        color: var(--white);
+    }
+    
+    .btn-cta-outline {
         background: transparent;
-        color: white;
-        padding: 15px 40px;
+        color: var(--white);
+        padding: 14px 40px;
         border-radius: 50px;
-        font-size: 1.2rem;
-        font-weight: 600;
+        font-weight: 700;
+        font-size: 1rem;
         text-decoration: none;
         display: inline-block;
-        transition: all 0.3s ease;
-        border: 2px solid white;
-        margin: 10px;
+        transition: all 0.4s ease;
+        margin: 10px 0 0 0;
+        border: 2px solid var(--accent-gold);
+        min-width: 200px;
+        backdrop-filter: blur(5px);
     }
     
-    .cta-button-outline:hover {
-        background: white;
-        color: var(--primary-color);
-        transform: translateY(-3px);
+    @media (min-width: 576px) {
+        .btn-cta-outline {
+            margin: 0 0 0 15px;
+        }
     }
     
-    /* Footer */
+    .btn-cta-outline:hover {
+        background: var(--accent-gold);
+        color: var(--primary-blue);
+        transform: translateY(-5px) scale(1.05);
+    }
+    
+    .cta-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+    }
+    
+    @media (min-width: 576px) {
+        .cta-buttons {
+            flex-direction: row;
+            justify-content: center;
+            gap: 25px;
+        }
+    }
+    
+    /* ===== FOOTER ===== */
     .college-footer {
-        background: #1a2639;
-        color: white;
-        padding: 40px 0;
-        margin-top: 50px;
+        background: var(--white);
+        color: var(--text-dark);
+        padding: 40px 20px;
+        border-top: 1px solid rgba(212, 175, 55, 0.2);
     }
     
     .footer-text {
-        opacity: 0.8;
-        font-size: 0.95rem;
+        opacity: 0.7;
+        font-size: 0.9rem;
+        transition: opacity 0.3s ease;
     }
     
-    /* Responsive */
+    .footer-text:hover {
+        opacity: 1;
+        color: var(--accent-gold);
+    }
+    
+    /* ===== SCROLL REVEAL ===== */
+    .reveal {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+    .reveal-delay-5 { transition-delay: 0.5s; }
+    .reveal-delay-6 { transition-delay: 0.6s; }
+    .reveal-delay-7 { transition-delay: 0.7s; }
+    
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
-        .college-name {
-            font-size: 2rem;
+        .hero-title {
+            font-size: 1.8rem;
         }
         
-        .hero-buttons .btn {
-            display: block;
-            margin: 10px auto;
-            width: 80%;
+        .hero-logo {
+            width: 70px;
+            height: 70px;
+        }
+        
+        .hero-logo i {
+            font-size: 32px;
         }
         
         .stat-number {
             font-size: 2rem;
         }
         
-        .cta-button, .cta-button-outline {
-            display: block;
-            width: 80%;
-            margin: 10px auto;
+        .stats-section {
+            margin-top: -30px;
+        }
+        
+        .feature-card {
+            padding: 25px 18px;
+        }
+        
+        .feature-icon {
+            width: 55px;
+            height: 55px;
+        }
+        
+        .feature-icon i {
+            font-size: 24px;
         }
     }
 </style>
 
-<!-- Hero Section with College Image -->
+<!-- Hero Section - College Name & Logo Directly on Clear Background Image -->
 <div class="hero-section">
-    <div class="container">
-        <div class="college-logo">
+    <div class="hero-bg"></div>
+    
+    <div class="hero-content">
+        <div class="hero-badge">EST. 1965</div>
+        
+        <div class="hero-logo">
             <i class="fas fa-university"></i>
         </div>
-        <h1 class="college-name">Nehru Arts And Science College</h1>
-        <div class="college-location">
-            <i class="fas fa-map-marker-alt me-2"></i> Kanhangad, Kerala
-        </div>
+        
+        <h1 class="hero-title">
+            Nehru Arts & Science <br>
+            <span>College, Kanhangad</span>
+        </h1>
+        
+        <p class="hero-subtitle">
+            A premier institution dedicated to excellence in education, research, and innovation.
+        </p>
+        
         <div class="hero-buttons">
-            <a href="{% url 'student_notifications' %}" class="btn-primary-custom">
-                <i class="fas fa-bell"></i> Student Notification Board
+            <a href="{% url 'student_notifications' %}" class="btn-primary">
+                <i class="fas fa-bell"></i> View Notifications
             </a>
-            <a href="{% url 'login' %}" class="btn-outline-custom">
+            <a href="{% url 'login' %}" class="btn-outline">
                 <i class="fas fa-sign-in-alt"></i> Staff Login
             </a>
         </div>
     </div>
 </div>
 
-<!-- Welcome Section -->
-<div class="container">
-    <div class="welcome-card text-center">
-        <h2 class="welcome-title">Welcome to the Digital Notification System</h2>
-        <p class="welcome-text">
-            A centralized platform for all college announcements, exam schedules, event updates, and important notices. 
-            Stay connected with real-time notifications tailored for students, faculty, and staff.
-        </p>
-    </div>
-</div>
-
-<!-- Quick Stats - REAL DATA FROM DATABASE with Counting Animation -->
+<!-- Statistics Section -->
 <div class="container">
     <div class="stats-section">
-        <div class="row">
-            <div class="col-md-3 col-6">
-                <div class="stat-item">
-                    <div class="stat-number" id="stat-notifications">0</div>
-                    <div class="stat-label">Notifications</div>
-                </div>
+        <div class="stats-grid">
+            <div class="stat-item reveal reveal-delay-1">
+                <div class="stat-number" id="stat-notifications">0</div>
+                <div class="stat-label">Notifications Sent</div>
             </div>
-            <div class="col-md-3 col-6">
-                <div class="stat-item">
-                    <div class="stat-number" id="stat-students">0</div>
-                    <div class="stat-label">Students</div>
-                </div>
-            </div>
-            <div class="col-md-3 col-6">
-                <div class="stat-item">
-                    <div class="stat-number" id="stat-faculty">0</div>
-                    <div class="stat-label">Faculty & Staff</div>
-                </div>
-            </div>
-            <div class="col-md-3 col-6">
-                <div class="stat-item">
-                    <div class="stat-number" id="stat-readrate">0%</div>
-                    <div class="stat-label">Read Rate</div>
-                </div>
+            <div class="stat-item reveal reveal-delay-2">
+                <div class="stat-number" id="stat-users">0</div>
+                <div class="stat-label">Faculty & Staff</div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Quick Actions -->
-<div class="container text-center my-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="cta-section">
-                <h2 class="cta-title">Stay Updated with College Notifications</h2>
-                <p class="lead mb-4">Access the public notification board or login to manage announcements</p>
-                <a href="{% url 'student_notifications' %}" class="cta-button">
+<!-- Features Section -->
+<div class="features-section">
+    <div class="container">
+        <div class="section-header reveal reveal-delay-1">
+            <div class="section-badge">POWERFUL FEATURES</div>
+            <h2 class="section-title">Everything You Need</h2>
+            <p class="section-subtitle">Making college communication seamless and efficient</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card reveal reveal-delay-2">
+                <div class="feature-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3 class="feature-title">Real-Time Updates</h3>
+                <p class="feature-text">Instant notifications delivered immediately to all users.</p>
+            </div>
+            
+            <div class="feature-card reveal reveal-delay-3">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="feature-title">Secure Access</h3>
+                <p class="feature-text">Role-based access control ensuring data security.</p>
+            </div>
+            
+            <div class="feature-card reveal reveal-delay-4">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="feature-title">Analytics Dashboard</h3>
+                <p class="feature-text">Track read rates and engagement metrics.</p>
+            </div>
+            
+            <div class="feature-card reveal reveal-delay-5">
+                <div class="feature-icon">
+                    <i class="fas fa-thumbtack"></i>
+                </div>
+                <h3 class="feature-title">Pin Important Notifications</h3>
+                <p class="feature-text">Pin and highlight critical announcements for better visibility.</p>
+            </div>
+            
+            <div class="feature-card reveal reveal-delay-6">
+                <div class="feature-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h3 class="feature-title">Email Reminders</h3>
+                <p class="feature-text">Get email reminders for important deadlines and events.</p>
+            </div>
+            
+            <div class="feature-card reveal reveal-delay-7">
+                <div class="feature-icon">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <h3 class="feature-title">Smart Categories</h3>
+                <p class="feature-text">Color-coded categories for easy identification of notification types.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2 class="cta-title">Stay Connected</h2>
+            <p class="cta-text">Get all college announcements and updates in one place</p>
+            <div class="cta-buttons">
+                <a href="{% url 'student_notifications' %}" class="btn-cta">
                     <i class="fas fa-bell"></i> View Notifications
                 </a>
-                <a href="{% url 'login' %}" class="cta-button-outline">
+                <a href="{% url 'login' %}" class="btn-cta-outline">
                     <i class="fas fa-sign-in-alt"></i> Staff Access
                 </a>
             </div>
@@ -391,31 +932,23 @@
 </div>
 
 <script>
-// Animate numbers counting up with REAL DATA from database
+// Number animation
 document.addEventListener('DOMContentLoaded', function() {
-    // These values come from your database (set in views.py)
     const totalNotifications = {{ total_notifications|default:0 }};
-    const totalStudents = {{ total_students|default:0 }};
     const totalUsers = {{ total_users|default:0 }};
-    const readRate = {{ read_rate|default:0 }};
     
-    // If database is empty, show meaningful fallback values
-    // This ensures the homepage always looks impressive
-    const displayNotifications = totalNotifications > 0 ? totalNotifications : 1250;
-    const displayStudents = totalStudents > 0 ? totalStudents : 534;
-    const displayUsers = totalUsers > 0 ? totalUsers : 58;
-    const displayReadRate = readRate > 0 ? readRate : 92;
-    
-    // Animate each number
-    animateNumber('stat-notifications', displayNotifications);
-    animateNumber('stat-students', displayStudents);
-    animateNumber('stat-faculty', displayUsers);
-    animateNumberWithPercent('stat-readrate', displayReadRate);
+    animateNumber('stat-notifications', totalNotifications);
+    animateNumber('stat-users', totalUsers);
     
     function animateNumber(elementId, targetValue) {
         let current = 0;
         const element = document.getElementById(elementId);
         if (!element) return;
+        
+        if (targetValue === 0) {
+            element.textContent = '0';
+            return;
+        }
         
         const increment = targetValue / 60;
         const timer = setInterval(() => {
@@ -425,24 +958,48 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearInterval(timer);
             }
             element.textContent = Math.floor(current).toLocaleString();
-        }, 20);
+        }, 25);
     }
-    
-    function animateNumberWithPercent(elementId, targetValue) {
-        let current = 0;
-        const element = document.getElementById(elementId);
-        if (!element) return;
+});
+
+// Scroll reveal animation
+const revealElements = document.querySelectorAll('.reveal');
+
+function checkReveal() {
+    revealElements.forEach(element => {
+        const elementTop = element.getBoundingClientRect().top;
+        const windowHeight = window.innerHeight;
         
-        const increment = targetValue / 60;
-        const timer = setInterval(() => {
-            current += increment;
-            if (current >= targetValue) {
-                current = targetValue;
-                clearInterval(timer);
-            }
-            element.textContent = Math.floor(current) + '%';
-        }, 20);
-    }
+        if (elementTop < windowHeight - 100) {
+            element.classList.add('active');
+        }
+    });
+}
+
+window.addEventListener('load', checkReveal);
+window.addEventListener('scroll', checkReveal);
+
+// Add hover animation to feature cards
+document.querySelectorAll('.feature-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transition = 'all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+    });
+});
+
+// Add pulse animation to stat numbers on hover
+document.querySelectorAll('.stat-item').forEach(item => {
+    item.addEventListener('mouseenter', function() {
+        const number = this.querySelector('.stat-number');
+        if (number) {
+            number.style.transform = 'scale(1.05)';
+        }
+    });
+    item.addEventListener('mouseleave', function() {
+        const number = this.querySelector('.stat-number');
+        if (number) {
+            number.style.transform = 'scale(1)';
+        }
+    });
 });
 </script>
 {% endblock %}

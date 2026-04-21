@@ -17,29 +17,25 @@ from accounts.models import User
 from accounts.decorators import sender_required, role_required
 
 def home_page(request):
-    """Home page for the website"""
+    """Home page for the website with real statistics"""
     
-    # Get REAL statistics from database
+    from accounts.models import User
+    from .models import Notification
+    
     total_notifications = Notification.objects.filter(is_draft=False).count()
-    total_students = User.objects.filter(role='student', is_active=True).count()
+    
+    # Count ALL active users EXCLUDING admin
+    total_users = User.objects.filter(is_active=True).exclude(role='admin').count()
+    
+    # Count teachers and staff
     total_teachers = User.objects.filter(role='teacher', is_active=True).count()
     total_staff = User.objects.filter(role='staff', is_active=True).count()
-    total_users = total_teachers + total_staff
-    
-    # Calculate read rate (percentage of read notifications)
-    total_read_statuses = ReadStatus.objects.count()
-    total_read = ReadStatus.objects.filter(is_read=True).count()
-    
-    if total_read_statuses > 0:
-        read_rate = int((total_read / total_read_statuses) * 100)
-    else:
-        read_rate = 0
+    total_faculty_staff = total_teachers + total_staff
     
     context = {
         'total_notifications': total_notifications,
-        'total_students': total_students,
         'total_users': total_users,
-        'read_rate': read_rate,
+        'total_faculty_staff': total_faculty_staff,
     }
     
     return render(request, 'home.html', context)
