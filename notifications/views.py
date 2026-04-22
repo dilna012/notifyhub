@@ -95,6 +95,13 @@ def notification_list(request):
                 user=request.user,
                 notification=notification
             )
+            
+            # ===== AUTO-UNPIN IF EVENT EXPIRED =====
+            if read_status.is_pinned and notification.is_event_expired():
+                read_status.is_pinned = False
+                read_status.pinned_at = None
+                read_status.save()
+            
             notifications_with_status.append({
                 'notification': notification,
                 'reminder_time': read_status.reminder_time,
@@ -142,6 +149,12 @@ def notification_list(request):
                 user=request.user,
                 notification=notification
             )
+            
+            # ===== AUTO-UNPIN IF EVENT EXPIRED =====
+            if read_status.is_pinned and notification.is_event_expired():
+                read_status.is_pinned = False
+                read_status.pinned_at = None
+                read_status.save()
 
             if notification.sender == request.user:
                 notifications_with_status.append({
@@ -191,6 +204,13 @@ def notification_list(request):
                 user=request.user,
                 notification=notification
             )
+            
+            # ===== AUTO-UNPIN IF EVENT EXPIRED =====
+            if read_status.is_pinned and notification.is_event_expired():
+                read_status.is_pinned = False
+                read_status.pinned_at = None
+                read_status.save()
+            
             notifications_with_status.append({
                 'notification': notification,
                 'is_read': read_status.is_read,
@@ -608,6 +628,12 @@ def publish_draft(request, pk):
 @login_required
 def toggle_pin_notification(request, pk):
     notification = get_object_or_404(Notification, pk=pk)
+    
+    # ===== CHECK IF EVENT HAS EXPIRED BEFORE PINNING =====
+    if notification.is_event_expired():
+        messages.warning(request, f'Cannot pin "{notification.title}" because the event date has passed.')
+        return redirect(request.META.get('HTTP_REFERER', 'notification_list'))
+    
     read_status, created = ReadStatus.objects.get_or_create(
         user=request.user,
         notification=notification
@@ -624,3 +650,27 @@ def toggle_pin_notification(request, pk):
 
     read_status.save()
     return redirect(request.META.get('HTTP_REFERER', 'notification_list'))
+
+# ===== NEW: API ENDPOINT TO CHECK EXPIRED PINS =====
+@login_required
+def check_expired_pins(request):
+    """API endpoint to check and unpin expired notifications"""
+    from django.utils import timezone
+    
+    # Get all pinned notifications for the user where event has expired
+    pinned_statuses = ReadStatus.objects.filter(
+        user=request.user,
+        is_pinned=True,
+        notification__event_date__isnull=False,
+        notification__event_date__lt=timezone.now()
+    )
+    
+    unpinned_count = pinned_statuses.count()
+    
+    # Unpin them
+    for status in pinned_statuses:
+        status.is_pinned = False
+        status.pinned_at = None
+        status.save()
+    
+    return JsonResponse({'unpinned_count': unpinned_count})

@@ -3,6 +3,116 @@
 {% block title %}My Sent Notifications{% endblock %}
 
 {% block content %}
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    
+    /* Reminder Alert Styles */
+    .reminder-alert {
+        background: linear-gradient(135deg, #d4edda, #c8e6c9);
+        border-left: 4px solid #28a745;
+        border-radius: 10px;
+        padding: 10px 15px;
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: fadeInUp 0.3s ease-out;
+    }
+    
+    .reminder-alert i {
+        color: #28a745;
+        font-size: 16px;
+    }
+    
+    .reminder-alert .reminder-text {
+        color: #155724;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .reminder-alert .reminder-sent {
+        background: #28a745;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+    
+    /* ===== NEW: Disabled Pin Button Warning Styles ===== */
+    .pin-btn-disabled {
+        opacity: 0.6;
+        cursor: not-allowed !important;
+        position: relative;
+    }
+    
+    .pin-btn-disabled:hover::after {
+        content: "⚠️ Cannot pin - event date has passed";
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 11px;
+        white-space: nowrap;
+        z-index: 1000;
+        margin-bottom: 5px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    .pin-btn-disabled:hover::before {
+        content: "";
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 5px;
+        border-style: solid;
+        border-color: #dc3545 transparent transparent transparent;
+        margin-bottom: -5px;
+        z-index: 1000;
+    }
+    
+    .expired-badge {
+        background: #dc3545;
+        color: white;
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 20px;
+        margin-left: 8px;
+    }
+    
+    .warning-text {
+        color: #dc3545;
+        font-size: 11px;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
 <div class="row mb-4">
     <div class="col">
         <h2>My Sent Notifications</h2>
@@ -19,101 +129,132 @@
     <div class="col-md-6 mb-3">
         <div class="card {% if item.is_pinned %}border-warning{% endif %}">
             <div class="card-body">
-                <h5 class="card-title">
-                    {{ item.notification.title }}
+                <!-- Title Row -->
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title mb-0">
+                        {{ item.notification.title }}
+                        {% if item.is_pinned %}
+                            <span class="badge bg-warning text-dark ms-2">
+                                <i class="fas fa-thumbtack"></i> Pinned
+                            </span>
+                        {% endif %}
+                    </h5>
+                </div>
 
-                    {% if item.is_pinned %}
-                        <span class="badge bg-warning text-dark ms-2">
-                            <i class="fas fa-thumbtack"></i> Pinned
-                        </span>
-                    {% endif %}
-                </h5>
+                <!-- Message -->
+                <p class="card-text text-muted mb-3">{{ item.notification.message|truncatechars:120 }}</p>
 
-                <p class="card-text">{{ item.notification.message|truncatechars:150 }}</p>
-
+                <!-- Event Date (if exists) with Expired Badge -->
                 {% if item.notification.event_date %}
-                <p class="card-text">
+                <p class="card-text mb-2">
                     <small class="text-muted">
                         <i class="fas fa-calendar-alt"></i>
                         Event: {{ item.notification.event_date|date:"M d, Y h:i A" }}
                     </small>
+                    <!-- Show expired badge if event passed -->
+                    {% if item.notification.is_event_expired %}
+                    <span class="expired-badge">
+                        <i class="fas fa-clock"></i> Expired
+                    </span>
+                    {% endif %}
                 </p>
                 {% endif %}
 
+                <!-- Action Buttons -->
                 <div class="d-flex justify-content-between align-items-center">
                     <small class="text-muted">
                         Sent: {{ item.notification.created_at|timesince }} ago
                     </small>
-                    <div>
-                        <a href="{% url 'notification_detail' item.notification.id %}" class="btn btn-sm btn-outline-primary">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'notification_detail' item.notification.id %}" class="btn btn-outline-primary">
                             <i class="fas fa-eye"></i> View
                         </a>
-                        <!-- ===== STATS BUTTON - ONLY SHOW IF SENT TO TEACHERS OR STAFF ===== -->
+                        
+                        <!-- Stats Button - ONLY for Teacher/Staff notifications -->
                         {% if item.notification.send_to_teachers or item.notification.send_to_staff %}
-                        <a href="{% url 'notification_stats' item.notification.id %}" class="btn btn-sm btn-outline-info">
-                            <i class="fas fa-chart-bar"></i> Stats
-                        </a>
+                            <a href="{% url 'notification_stats' item.notification.id %}" class="btn btn-outline-info">
+                                <i class="fas fa-chart-bar"></i> Stats
+                            </a>
                         {% endif %}
-                        <!-- ===== END STATS BUTTON CONDITION ===== -->
-                        <button type="button" class="btn btn-sm btn-outline-danger"
+                        
+                        <button type="button" class="btn btn-outline-danger"
                                 onclick="confirmDelete('{{ item.notification.id }}', '{{ item.notification.title|escapejs }}')">
-                            <i class="fas fa-trash"></i> Delete
+                            <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </div>
 
-                <div class="mt-2">
-                    <span class="badge bg-success">Read: {{ item.notification.get_read_count }}</span>
-                    <span class="badge bg-secondary">Total: {{ item.notification.get_total_students }}</span>
-                </div>
-
-                <div class="mt-3 d-flex gap-2 flex-wrap">
-                    <form method="POST" action="{% url 'toggle_pin_notification' item.notification.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-outline-warning">
-                            <i class="fas fa-thumbtack"></i>
-                            {% if item.is_pinned %}Unpin{% else %}Pin{% endif %}
-                        </button>
-                    </form>
-
-                    <form method="POST" action="{% url 'set_reminder' item.notification.id %}" class="d-flex gap-2 flex-wrap">
-                        {% csrf_token %}
-                        <input
-                            type="datetime-local"
-                            name="reminder_time"
-                            class="form-control form-control-sm"
-                            value="{{ item.reminder_time|date:'Y-m-d\\TH:i' }}"
-                            required
-                        >
-                        <button type="submit" class="btn btn-warning btn-sm">
-                            {% if item.reminder_time %}Update{% else %}Set{% endif %} Reminder
-                        </button>
-                    </form>
-                </div>
-
+                <!-- Reminder Display (Green Box) -->
                 {% if item.reminder_time %}
-                    <div class="alert alert-info py-2 px-3 mt-2 mb-0">
-                        <small>
-                            <i class="fas fa-clock"></i>
-                            Reminder set for {{ item.reminder_time|date:"M d, Y h:i A" }}
-                        </small>
+                <div class="reminder-alert">
+                    <i class="fas fa-bell"></i>
+                    <div class="reminder-text">
+                        <strong>Reminder Set</strong>
+                        <br>
+                        <small>{{ item.reminder_time|date:"M d, Y h:i A" }}</small>
                     </div>
+                    {% if item.reminder_sent %}
+                        <span class="reminder-sent">
+                            <i class="fas fa-check-circle"></i> Sent
+                        </span>
+                    {% endif %}
+                </div>
                 {% endif %}
 
-                {% if item.reminder_sent %}
-                    <div class="alert alert-success py-2 px-3 mt-2 mb-0">
-                        <small>
-                            <i class="fas fa-check-circle"></i>
-                            Reminder email sent
-                        </small>
+                <!-- ===== UPDATED: Pin & Reminder Row with Warning for Expired Events ===== -->
+                <div class="mt-3 pt-2 border-top">
+                    <div class="d-flex gap-2 flex-wrap">
+                        
+                        <!-- ===== PIN BUTTON WITH EXPIRATION CHECK ===== -->
+                        <form method="POST" action="{% url 'toggle_pin_notification' item.notification.id %}" class="d-inline">
+                            {% csrf_token %}
+                            {% if item.notification.is_event_expired %}
+                                <!-- Disabled Pin Button with Tooltip -->
+                                <button type="button" class="btn btn-sm btn-outline-secondary pin-btn-disabled" disabled>
+                                    <i class="fas fa-thumbtack"></i>
+                                    Pin
+                                </button>
+                            {% else %}
+                                <!-- Normal Pin Button -->
+                                <button type="submit" class="btn btn-sm {% if item.is_pinned %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                                    <i class="fas fa-thumbtack"></i>
+                                    {% if item.is_pinned %}Unpin{% else %}Pin{% endif %}
+                                </button>
+                            {% endif %}
+                        </form>
+
+                        <!-- ===== REMINDER FORM WITH EXPIRATION CHECK ===== -->
+                        <form method="POST" action="{% url 'set_reminder' item.notification.id %}" class="d-flex gap-2">
+                            {% csrf_token %}
+                            <input type="datetime-local" name="reminder_time" 
+                                   class="form-control form-control-sm" 
+                                   style="width: auto;"
+                                   value="{{ item.reminder_time|date:'Y-m-d\\TH:i' }}"
+                                   {% if item.notification.is_event_expired %}disabled{% endif %}>
+                            <button type="submit" class="btn btn-warning btn-sm"
+                                    {% if item.notification.is_event_expired %}disabled{% endif %}>
+                                <i class="fas fa-bell"></i>
+                                {% if item.reminder_time %}Update{% else %}Set{% endif %} Reminder
+                            </button>
+                        </form>
                     </div>
-                {% endif %}
+                    
+                    <!-- ===== WARNING MESSAGE FOR EXPIRED EVENTS ===== -->
+                    {% if item.notification.is_event_expired %}
+                        <div class="warning-text">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Event has passed. Pin and reminder options are disabled.
+                        </div>
+                    {% endif %}
+                </div>
+                <!-- ===== END PIN & REMINDER ROW ===== -->
             </div>
         </div>
     </div>
     {% empty %}
     <div class="col">
-        <div class="alert alert-info">
+        <div class="alert alert-info text-center">
+            <i class="fas fa-bell-slash fa-2x mb-2 d-block"></i>
             You haven't sent any notifications yet.
             <a href="{% url 'notification_create' %}" class="alert-link">Create your first notification</a>
         </div>
@@ -123,7 +264,7 @@
 
 <script>
 function confirmDelete(notificationId, notificationTitle) {
-    if (confirm(`Are you sure you want to delete "${notificationTitle}"?\n\nThis action cannot be undone!`)) {
+    if (confirm(`Delete "${notificationTitle}"? This cannot be undone.`)) {
         window.location.href = `/notifications/${notificationId}/delete/`;
     }
 }

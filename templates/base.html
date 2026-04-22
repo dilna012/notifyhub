@@ -738,11 +738,45 @@
             fetch('/unread-count/')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('unread-count').innerText = data.count;
-                });
+                    const unreadElement = document.getElementById('unread-count');
+                    if (unreadElement) {
+                        unreadElement.innerText = data.count;
+                    }
+                })
+                .catch(error => console.log('Error fetching unread count:', error));
         }
-        // Run every 3 seconds
-        setInterval(updateUnreadCount, 1000);
+        
+        // ===== NEW: AUTO-CHECK FOR EXPIRED PINS =====
+        function checkExpiredPins() {
+            fetch('/check-expired-pins/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.unpinned_count > 0) {
+                        // Show a subtle notification
+                        console.log(`${data.unpinned_count} expired notification(s) were unpinned`);
+                        // Optional: Show a toast notification
+                        if (typeof showToast === 'function') {
+                            showToast(`${data.unpinned_count} notification(s) unpinned (event expired)`, 'info');
+                        }
+                        // Reload page to reflect changes
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    }
+                })
+                .catch(error => console.log('Error checking expired pins:', error));
+        }
+        
+        // Check for expired pins every 5 minutes (300000 ms)
+        setInterval(checkExpiredPins, 300000);
+        
+        // Check when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            checkExpiredPins();
+        });
+        
+        // Run unread count every 3 seconds
+        setInterval(updateUnreadCount, 3000);
 
         // Run immediately when page loads
         updateUnreadCount();

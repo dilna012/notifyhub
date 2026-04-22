@@ -4,141 +4,551 @@
 {% block title %}{{ notification.title }}{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col">
+<style>
+    /* Modern CSS Variables */
+    :root {
+        --primary: #4361ee;
+        --primary-dark: #3a0ca3;
+        --primary-light: #e8eeff;
+        --secondary: #7209b7;
+        --success: #4cc9f0;
+        --accent: #f8961e;
+        --dark: #2b2d42;
+        --gray: #6c757d;
+        --light: #f8f9fa;
+        --white: #ffffff;
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+        --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
+        --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.12);
+    }
+    
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+    
+    @keyframes shimmer {
+        0% { background-position: -1000px 0; }
+        100% { background-position: 1000px 0; }
+    }
+    
+    /* Main Container Animation */
+    .detail-container {
+        animation: fadeInUp 0.6s ease-out;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    /* Modern Breadcrumb */
+    .modern-breadcrumb {
+        margin-bottom: 30px;
+        animation: slideInLeft 0.5s ease-out;
+    }
+    
+    .modern-breadcrumb .breadcrumb {
+        background: transparent;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .modern-breadcrumb .breadcrumb-item a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .modern-breadcrumb .breadcrumb-item a:hover {
+        color: var(--primary-dark);
+        transform: translateX(-2px);
+    }
+    
+    .modern-breadcrumb .breadcrumb-item.active {
+        color: var(--gray);
+        font-weight: 500;
+    }
+    
+    /* Main Card */
+    .main-card {
+        background: var(--white);
+        border-radius: 24px;
+        border: none;
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .main-card:hover {
+        box-shadow: var(--shadow-hover);
+        transform: translateY(-4px);
+    }
+    
+    /* Draft Header */
+    .draft-header {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        color: #92400e;
+        padding: 16px 24px;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        animation: pulse 2s infinite;
+    }
+    
+    /* Target Audience Section */
+    .audience-section {
+        background: linear-gradient(135deg, var(--primary-light), #f0f4ff);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+    }
+    
+    .audience-section:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .audience-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .audience-title i {
+        font-size: 14px;
+    }
+    
+    .target-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        animation: slideInRight 0.4s ease-out;
+        animation-fill-mode: both;
+    }
+    
+    .target-badge:hover {
+        transform: translateY(-2px) scale(1.05);
+    }
+    
+    .target-badge:nth-child(1) { animation-delay: 0.1s; }
+    .target-badge:nth-child(2) { animation-delay: 0.2s; }
+    .target-badge:nth-child(3) { animation-delay: 0.3s; }
+    
+    .badge-students {
+        background: linear-gradient(135deg, #e3f2fd, #bbdef5);
+        color: #1565c0;
+    }
+    
+    .badge-teachers {
+        background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+        color: #2e7d32;
+    }
+    
+    .badge-staff {
+        background: linear-gradient(135deg, #e0f2f1, #b2dfdb);
+        color: #00695c;
+    }
+    
+    /* Notification Title */
+    .notification-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 20px;
+        line-height: 1.3;
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    /* Meta Badges */
+    .meta-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 24px;
+        animation: fadeInUp 0.5s ease-out 0.1s;
+        animation-fill-mode: both;
+    }
+    
+    .meta-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .meta-badge:hover {
+        transform: translateY(-2px);
+    }
+    
+    .badge-sender {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+    }
+    
+    .badge-date {
+        background: var(--light);
+        color: var(--gray);
+    }
+    
+    .badge-event {
+        background: linear-gradient(135deg, #f8961e, #f4a261);
+        color: white;
+    }
+    
+    .badge-category {
+        background: var(--dark);
+        color: white;
+    }
+    
+    /* Message Content */
+    .message-content {
+        background: var(--light);
+        border-radius: 20px;
+        padding: 28px;
+        margin-bottom: 24px;
+        line-height: 1.8;
+        color: var(--dark);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.5s ease-out 0.2s;
+        animation-fill-mode: both;
+    }
+    
+    .message-content:hover {
+        background: #ffffff;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    /* Reminder Button */
+    .reminder-btn {
+        background: linear-gradient(135deg, #f8961e, #f4a261);
+        border: none;
+        padding: 12px 24px;
+        border-radius: 40px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.5s ease-out 0.3s;
+        animation-fill-mode: both;
+    }
+    
+    .reminder-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(248, 150, 30, 0.3);
+    }
+    
+    /* Action Card */
+    .action-card {
+        background: var(--white);
+        border-radius: 20px;
+        border: none;
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+        animation: slideInRight 0.5s ease-out;
+        overflow: hidden;
+    }
+    
+    .action-card:hover {
+        box-shadow: var(--shadow-hover);
+        transform: translateY(-4px);
+    }
+    
+    .action-header {
+        background: linear-gradient(135deg, var(--dark), #1a1a2e);
+        color: white;
+        padding: 16px 20px;
+        font-weight: 600;
+    }
+    
+    .action-header i {
+        margin-right: 8px;
+    }
+    
+    .delete-btn {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        border: none;
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .delete-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
+    }
+    
+    /* Reminder Form */
+    .reminder-form-container {
+        background: var(--light);
+        border-radius: 16px;
+        margin-top: 16px;
+        animation: fadeInUp 0.3s ease-out;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .notification-title {
+            font-size: 1.5rem;
+        }
+        
+        .message-content {
+            padding: 20px;
+        }
+        
+        .target-badge {
+            padding: 6px 14px;
+            font-size: 11px;
+        }
+    }
+</style>
+
+<div class="detail-container">
+    <!-- Breadcrumb -->
+    <div class="modern-breadcrumb">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'notification_list' %}">Notifications</a></li>
-                <li class="breadcrumb-item active">{{ notification.title|truncatechars:30 }}</li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'notification_list' %}">
+                        <i class="fas fa-bell"></i> Notifications
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    {{ notification.title|truncatechars:40 }}
+                </li>
             </ol>
         </nav>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card {% if notification.is_draft %}border-warning{% endif %}">
-            {% if notification.is_draft %}
-            <div class="card-header bg-warning text-dark">
-                <i class="bi bi-pencil"></i> Draft Mode
-            </div>
-            {% endif %}
-            <div class="card-body">
-                <h2 class="card-title">{{ notification.title }}</h2>
-                
-                <div class="mb-3">
-                    <span class="badge bg-info">{{ notification.sender.get_role_display }}</span>
-                    <span class="badge bg-secondary">{{ notification.created_at|date:"F d, Y h:i A" }}</span>
-                    {% if notification.event_date %}
-                    <span class="badge bg-primary">
-                        <i class="bi bi-calendar-event"></i> {{ notification.event_date|date:"F d, Y h:i A" }}
-                    </span>
-                    {% endif %}
+    <div class="row g-4">
+        <!-- Main Content Column -->
+        <div class="col-lg-8">
+            <div class="main-card card">
+                {% if notification.is_draft %}
+                <div class="draft-header">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    <strong>Draft Mode</strong> - This notification has not been published yet
                 </div>
+                {% endif %}
                 
-                <div class="card-text mb-4">
-                    {{ notification.message|linebreaks }}
-                </div>
-                
-                {% if user.role == 'student' and not notification.is_draft %}
-                <div class="mt-4">
-                    <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#reminderForm">
-                        <i class="bi bi-alarm"></i> Set Reminder
-                    </button>
+                <div class="card-body p-4 p-lg-5">
                     
-                    <div class="collapse mt-3" id="reminderForm">
-                        <div class="card card-body">
-                            <form method="post" action="{% url 'set_reminder' notification.id %}">
-                                {% csrf_token %}
-                                <div class="mb-3">
-                                    <label for="reminder_time" class="form-label">Reminder Time</label>
-                                    <input type="datetime-local" class="form-control" id="reminder_time" name="reminder_time" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Set Reminder</button>
-                            </form>
+                    <!-- Target Audience Section -->
+                    <div class="audience-section">
+                        <div class="audience-title">
+                            <i class="fas fa-users"></i>
+                            Target Audience
+                        </div>
+                        <div class="d-flex gap-3 flex-wrap">
+                            {% if notification.send_to_students %}
+                                <span class="target-badge badge-students">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    Students
+                                </span>
+                            {% endif %}
+                            {% if notification.send_to_teachers %}
+                                <span class="target-badge badge-teachers">
+                                    <i class="fas fa-chalkboard-user"></i>
+                                    Teachers
+                                </span>
+                            {% endif %}
+                            {% if notification.send_to_staff %}
+                                <span class="target-badge badge-staff">
+                                    <i class="fas fa-user-tie"></i>
+                                    Staff
+                                </span>
+                            {% endif %}
                         </div>
                     </div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4">
-        {% if user.role in 'principal,teacher' and notification.sender == user %}
-        <div class="card mb-3">
-            <div class="card-header">
-                <i class="bi bi-gear"></i> Actions
-            </div>
-            <div class="card-body">
-                {% if notification.is_draft %}
-                <a href="{% url 'notification_create' %}?edit={{ notification.id }}" class="btn btn-warning w-100 mb-2">
-                    <i class="bi bi-pencil"></i> Edit Draft
-                </a>
-                <form method="post" action="{% url 'notification_create' %}" class="d-inline w-100">
-                    {% csrf_token %}
-                    <input type="hidden" name="notification_id" value="{{ notification.id }}">
-                    <input type="hidden" name="publish" value="true">
-                    <button type="submit" class="btn btn-success w-100">
-                        <i class="bi bi-send"></i> Publish Now
-                    </button>
-                </form>
-                {% else %}
-                <!-- ===== VIEW STATISTICS BUTTON - ONLY SHOW IF SENT TO TEACHERS OR STAFF ===== -->
-                {% if notification.send_to_teachers or notification.send_to_staff %}
-                <a href="{% url 'notification_stats' notification.id %}" class="btn btn-info w-100 mb-2">
-                    <i class="bi bi-graph-up"></i> View Statistics
-                </a>
-                {% endif %}
-                <!-- ===== END VIEW STATISTICS BUTTON CONDITION ===== -->
-                {% endif %}
-                
-                <!-- DELETE BUTTON - Only appears for the sender -->
-                <hr>
-                <button type="button" class="btn btn-danger w-100" 
-                        onclick="confirmDelete('{{ notification.id }}', '{{ notification.title|escapejs }}')">
-                    <i class="bi bi-trash"></i> Delete Notification
-                </button>
-            </div>
-        </div>
-        {% endif %}
-        
-        {% if user.role in 'student,staff' and user_read_status %}
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-info-circle"></i> Your Status
-            </div>
-            <div class="card-body">
-                <p>
-                    <strong>Status:</strong>
-                    {% if user_read_status.is_read %}
-                        <span class="badge bg-success">Read</span>
-                        <br>
-                        <small>Read on: {{ user_read_status.read_at|date:"F d, Y h:i A" }}</small>
-                    {% else %}
-                        <span class="badge bg-warning">Unread</span>
+                    
+                    <!-- Title -->
+                    <h1 class="notification-title">{{ notification.title }}</h1>
+                    
+                    <!-- Meta Badges -->
+                    <div class="meta-badges">
+                        <span class="meta-badge badge-sender">
+                            <i class="fas fa-user-circle"></i>
+                            {{ notification.sender.get_role_display }}
+                        </span>
+                        <span class="meta-badge badge-date">
+                            <i class="far fa-calendar-alt"></i>
+                            {{ notification.created_at|date:"F d, Y h:i A" }}
+                        </span>
+                        {% if notification.event_date %}
+                        <span class="meta-badge badge-event">
+                            <i class="fas fa-calendar-check"></i>
+                            Event: {{ notification.event_date|date:"F d, Y h:i A" }}
+                        </span>
+                        {% endif %}
+                        <span class="meta-badge badge-category">
+                            <i class="fas fa-tag"></i>
+                            {{ notification.get_category_display }}
+                        </span>
+                    </div>
+                    
+                    <!-- Message -->
+                    <div class="message-content">
+                        {{ notification.message|linebreaks }}
+                    </div>
+                    
+                    <!-- Set Reminder for Students -->
+                    {% if user.role == 'student' and not notification.is_draft %}
+                    <div>
+                        <button class="btn reminder-btn" type="button" data-bs-toggle="collapse" data-bs-target="#reminderForm">
+                            <i class="bi bi-alarm me-2"></i> Set Reminder
+                        </button>
+                        
+                        <div class="collapse" id="reminderForm">
+                            <div class="reminder-form-container p-3">
+                                <form method="post" action="{% url 'set_reminder' notification.id %}">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="reminder_time" class="form-label fw-semibold">
+                                            <i class="far fa-clock"></i> Choose reminder time
+                                        </label>
+                                        <input type="datetime-local" class="form-control" id="reminder_time" name="reminder_time" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-check"></i> Save Reminder
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                     {% endif %}
-                </p>
-                
-                {% if user_read_status.reminder_time %}
-                <p>
-                    <strong>Reminder Set:</strong>
-                    <br>
-                    <small>{{ user_read_status.reminder_time|date:"F d, Y h:i A" }}</small>
-                </p>
-                {% endif %}
+                </div>
             </div>
         </div>
-        {% endif %}
+        
+        <!-- Sidebar Column -->
+        <div class="col-lg-4">
+            {% if user.role in 'principal,teacher' and notification.sender == user %}
+            <div class="action-card card">
+                <div class="action-header">
+                    <i class="fas fa-sliders-h"></i>
+                    Actions
+                </div>
+                <div class="card-body p-4">
+                    {% if notification.is_draft %}
+                    <a href="{% url 'notification_create' %}?edit={{ notification.id }}" class="btn btn-warning w-100 mb-3">
+                        <i class="bi bi-pencil"></i> Edit Draft
+                    </a>
+                    <form method="post" action="{% url 'notification_create' %}" class="d-inline w-100">
+                        {% csrf_token %}
+                        <input type="hidden" name="notification_id" value="{{ notification.id }}">
+                        <input type="hidden" name="publish" value="true">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-send"></i> Publish Now
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    <button type="button" class="btn delete-btn w-100" 
+                            onclick="confirmDelete('{{ notification.id }}', '{{ notification.title|escapejs }}')">
+                        <i class="bi bi-trash"></i> Delete Notification
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Quick Info Card -->
+            <div class="card mt-4" style="border-radius: 20px; border: none; box-shadow: var(--shadow-md); animation: slideInRight 0.5s ease-out 0.2s; animation-fill-mode: both;">
+                <div class="card-body p-4">
+                    <h6 class="mb-3" style="color: var(--primary); font-weight: 700;">
+                        <i class="fas fa-info-circle"></i> Quick Info
+                    </h6>
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Notification ID</small>
+                        <strong>#{{ notification.id }}</strong>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Status</small>
+                        {% if notification.is_draft %}
+                            <span class="badge bg-warning text-dark">Draft</span>
+                        {% else %}
+                            <span class="badge bg-success">Published</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <small class="text-muted d-block mb-1">Last Updated</small>
+                        <span>{{ notification.updated_at|date:"M d, Y h:i A" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <!-- Delete Confirmation Script -->
 <script>
 function confirmDelete(notificationId, notificationTitle) {
-    if (confirm(`Are you sure you want to delete "${notificationTitle}"?\n\nThis action cannot be undone!`)) {
-        window.location.href = `/notifications/${notificationId}/delete/`;
+    if (confirm(`⚠️ Are you sure you want to delete "${notificationTitle}"?\n\nThis action cannot be undone!`)) {
+        // Add animation before redirect
+        const btn = event.target.closest('.delete-btn');
+        if (btn) {
+            btn.style.transform = 'scale(0.95)';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+        }
+        setTimeout(() => {
+            window.location.href = `/notifications/${notificationId}/delete/`;
+        }, 300);
     }
 }
+
+// Add hover animation to cards
+document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transition = 'all 0.3s ease';
+    });
+});
 </script>
 {% endblock %}
