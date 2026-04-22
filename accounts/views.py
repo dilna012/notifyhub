@@ -39,6 +39,10 @@ def login_view(request):
 
 @login_required
 def dashboard(request):
+    total_notifications = 0
+    read_count = 0
+    unread_count = 0
+    pinned_count = 0
     user = request.user
     profile_incomplete = (
         not user.email or 
@@ -152,41 +156,91 @@ def dashboard(request):
         }
         return render(request, 'accounts/dashboard.html', context)
 
+    # ===== STAFF DASHBOARD (FIXED) =====
     elif user.role == 'staff':
         staff_notifications = Notification.objects.filter(
             is_draft=False,
             send_to_staff=True
         ).order_by('-created_at')
-
+        
         notifications_with_status = []
+        read_count = 0
         unread_count = 0
-
+        pinned_count = 0
+        
         for notification in staff_notifications:
             read_status, created = ReadStatus.objects.get_or_create(
                 user=user,
-                notification=notification,
-                defaults={'is_read': False}
+                notification=notification
             )
-
-            if not read_status.is_read:
+            
+            # Auto-unpin if event expired
+            if read_status.is_pinned and notification.is_event_expired():
+                read_status.is_pinned = False
+                read_status.pinned_at = None
+                read_status.save()
+            
+            # Count read/unread
+            if read_status.is_read:
+                read_count += 1
+            else:
                 unread_count += 1
-
+            
+            # Count pinned
+            if read_status.is_pinned:
+                pinned_count += 1
+            
             notifications_with_status.append({
                 'notification': notification,
                 'is_read': read_status.is_read,
                 'read_at': read_status.read_at,
                 'reminder_time': read_status.reminder_time,
+                'reminder_sent': read_status.reminder_sent,
+                'is_pinned': read_status.is_pinned,
+                'pinned_at': read_status.pinned_at,
             })
-
+        
         total_notifications = len(notifications_with_status)
         recent_notifications = notifications_with_status[:5]
-
+        
         context = {
             'unread_count': unread_count,
+            'read_count': read_count,
+            'pinned_count': pinned_count,
             'total_notifications': total_notifications,
             'recent_notifications': recent_notifications,
-            'all_notifications': notifications_with_status,
+            'notifications': notifications_with_status,  # For the table view
             'is_staff': True,
+            'profile_incomplete': profile_incomplete,
+        }
+        return render(request, 'accounts/dashboard.html', context)
+
+    # ===== STUDENT DASHBOARD =====
+    elif user.role == 'student':
+        student_notifications = Notification.objects.filter(
+            is_draft=False,
+            send_to_students=True
+        ).order_by('-created_at')
+        
+        read_count = 0
+        unread_count = 0
+        
+        for notification in student_notifications:
+            read_status = ReadStatus.objects.filter(
+                user=user,
+                notification=notification
+            ).first()
+            
+            if read_status and read_status.is_read:
+                read_count += 1
+            else:
+                unread_count += 1
+        
+        context = {
+            'unread_count': unread_count,
+            'read_count': read_count,
+            'total_notifications': student_notifications.count(),
+            'is_student': True,
             'profile_incomplete': profile_incomplete,
         }
         return render(request, 'accounts/dashboard.html', context)
@@ -196,6 +250,7 @@ def dashboard(request):
             'unread_count': 0,
             'total_notifications': 0,
             'recent_notifications': [],
+            'profile_incomplete': profile_incomplete,
         }
         return render(request, 'accounts/dashboard.html', context)
 

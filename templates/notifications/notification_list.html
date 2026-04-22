@@ -3,116 +3,314 @@
 {% block title %}Notifications{% endblock %}
 
 {% block content %}
+<style>
+    /* Reminder Alert Styles */
+    .reminder-alert {
+        background: linear-gradient(135deg, #d4edda, #c8e6c9);
+        border-left: 4px solid #28a745;
+        border-radius: 10px;
+        padding: 10px 15px;
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: fadeInUp 0.3s ease-out;
+    }
+    
+    .reminder-alert i {
+        color: #28a745;
+        font-size: 16px;
+    }
+    
+    .reminder-alert .reminder-text {
+        color: #155724;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .reminder-alert .reminder-sent {
+        background: #28a745;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+    
+    /* Disabled Pin Button Styles */
+    .pin-btn-disabled {
+        opacity: 0.6;
+        cursor: not-allowed !important;
+        position: relative;
+    }
+    
+    .pin-btn-disabled:hover::after {
+        content: "⚠️ Cannot pin - event date has passed";
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 11px;
+        white-space: nowrap;
+        z-index: 1000;
+        margin-bottom: 5px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    .pin-btn-disabled:hover::before {
+        content: "";
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 5px;
+        border-style: solid;
+        border-color: #dc3545 transparent transparent transparent;
+        margin-bottom: -5px;
+        z-index: 1000;
+    }
+    
+    .expired-badge {
+        background: #dc3545;
+        color: white;
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 20px;
+        margin-left: 8px;
+    }
+    
+    .warning-text {
+        color: #dc3545;
+        font-size: 11px;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .card {
+        transition: transform 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .card.pinned {
+        border: 2px solid #ffc107;
+        background: #fffef7;
+    }
+    
+    .pinned-badge {
+        background: #fef3c7;
+        color: #d97706;
+        border-radius: 20px;
+        padding: 4px 10px;
+        font-size: 10px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    /* Filter Info Bar */
+    .filter-info {
+        background: #e3f2fd;
+        border-radius: 10px;
+        padding: 10px 15px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
 <div class="row mb-4">
     <div class="col">
-        <h2>
-            {% if user.role == 'principal' or user.role == 'teacher' %}
-                Sent Notifications
-            {% else %}
-                All Notifications
-            {% endif %}
-        </h2>
+        <h2>My Notifications</h2>
     </div>
-
-    {% if user.can_send_notifications %}
-    <div class="col text-end">
-        <a href="{% url 'notification_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> New Notification
-        </a>
-    </div>
-    {% endif %}
 </div>
+
+<!-- Filter Info Bar -->
+{% if request.GET.filter %}
+<div class="filter-info">
+    <div>
+        <i class="fas fa-filter text-primary"></i>
+        <strong>Filtered by:</strong>
+        {% if request.GET.filter == 'unread' %}Unread Notifications
+        {% elif request.GET.filter == 'read' %}Read Notifications
+        {% elif request.GET.filter == 'pinned' %}Pinned Notifications
+        {% endif %}
+    </div>
+    <a href="{% url 'notification_list' %}" class="btn btn-sm btn-secondary">
+        <i class="fas fa-times"></i> Clear Filter
+    </a>
+</div>
+{% endif %}
 
 <div class="row">
     {% for item in notifications %}
-    <div class="col-md-6 mb-3">
-        <div class="card {% if item.is_read == False %}border-primary{% endif %}">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <h5 class="card-title">
-                        {{ item.notification.title }}
-
-                        {% if item.is_pinned %}
-                            <span class="badge bg-warning text-dark ms-2">
-                                <i class="fas fa-thumbtack"></i> Pinned
-                            </span>
-                        {% endif %}
-
-                        {% if item.is_read == False %}
-                            <span class="badge bg-danger">New</span>
-                        {% endif %}
-                    </h5>
-
-                    <small class="text-muted">
-                        {% if item.notification.published_at %}
-                            {{ item.notification.published_at|date:"M d, Y h:i A" }}
-                        {% else %}
-                            {{ item.notification.created_at|date:"M d, Y h:i A" }}
-                        {% endif %}
-                    </small>
-                </div>
-
-                <p class="card-text">
-                    {{ item.notification.message|truncatechars:150 }}
-                </p>
-
-                {% if item.notification.event_date %}
-                <p class="card-text">
-                    <small class="text-muted">
-                        <i class="bi bi-calendar-event"></i>
-                        Event: {{ item.notification.event_date|date:"M d, Y h:i A" }}
-                    </small>
-                </p>
-                {% endif %}
-
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="badge bg-info">
-                        {{ item.notification.sender.get_role_display }}
-                    </span>
-
-                    <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
-                        {% if item.reminder_time %}
-                            <span class="badge bg-warning" title="Reminder set">
-                                <i class="bi bi-alarm"></i>
-                            </span>
-                        {% endif %}
-
-                        <a href="{% url 'notification_detail' item.notification.id %}" class="btn btn-sm btn-outline-primary">
-                            Read More
-                        </a>
-
-                        <form method="POST" action="{% url 'toggle_pin_notification' item.notification.id %}" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-warning">
-                                <i class="fas fa-thumbtack"></i>
-                                {% if item.is_pinned %}Unpin{% else %}Pin{% endif %}
-                            </button>
-                        </form>
+        <!-- Filter Logic -->
+        {% if request.GET.filter == 'unread' and item.is_read %}
+            <!-- Skip - don't show read notifications when filter is unread -->
+        {% elif request.GET.filter == 'read' and not item.is_read %}
+            <!-- Skip - don't show unread notifications when filter is read -->
+        {% elif request.GET.filter == 'pinned' and not item.is_pinned %}
+            <!-- Skip - don't show non-pinned notifications when filter is pinned -->
+        {% else %}
+        <div class="col-md-6 mb-3">
+            <div class="card {% if item.is_pinned %}pinned{% endif %}">
+                <div class="card-body">
+                    <!-- Title Row -->
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">
+                            {{ item.notification.title }}
+                            {% if item.is_pinned %}
+                                <span class="pinned-badge ms-2">
+                                    <i class="fas fa-thumbtack"></i> Pinned
+                                </span>
+                            {% endif %}
+                        </h5>
+                        <span class="badge {% if not item.is_read %}bg-primary{% else %}bg-success{% endif %}">
+                            {% if not item.is_read %}
+                                <i class="fas fa-envelope"></i> Unread
+                            {% else %}
+                                <i class="fas fa-check"></i> Read
+                            {% endif %}
+                        </span>
                     </div>
-                </div>
 
-                {% if not item.notification.event_date or item.notification.event_date > now %}
-                {% if item.reminder_time %}
-                    <div class="alert alert-info py-2 px-3 mt-3 mb-0">
-                        <small>
-                            <i class="fas fa-clock"></i>
-                            Reminder set for {{ item.reminder_time|date:"M d, Y h:i A" }}
+                    <!-- Message -->
+                    <p class="card-text text-muted mb-3">{{ item.notification.message|truncatechars:120 }}</p>
+
+                    <!-- Event Date with Expired Badge -->
+                    {% if item.notification.event_date %}
+                    <p class="card-text mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar-alt"></i>
+                            Event: {{ item.notification.event_date|date:"M d, Y h:i A" }}
+                        </small>
+                        {% if item.notification.is_event_expired %}
+                            <span class="expired-badge">
+                                <i class="fas fa-clock"></i> Expired
+                            </span>
+                        {% endif %}
+                    </p>
+                    {% endif %}
+
+                    <!-- Category Badge -->
+                    <div class="mb-2">
+                        <span class="badge bg-secondary">
+                            <i class="fas fa-tag"></i> {{ item.notification.get_category_display }}
+                        </span>
+                        <small class="text-muted ms-2">
+                            <i class="far fa-calendar-alt"></i> {{ item.notification.display_time|date:"M d, Y" }}
                         </small>
                     </div>
-                {% endif %}
-                {% endif %}
+
+                    <!-- Reminder Display (Green Box) -->
+                    {% if item.reminder_time %}
+                    <div class="reminder-alert">
+                        <i class="fas fa-bell"></i>
+                        <div class="reminder-text">
+                            <strong>Reminder Set</strong>
+                            <br>
+                            <small>{{ item.reminder_time|date:"M d, Y h:i A" }}</small>
+                        </div>
+                        {% if item.reminder_sent %}
+                            <span class="reminder-sent">
+                                <i class="fas fa-check-circle"></i> Sent
+                            </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Action Buttons Row -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'notification_detail' item.notification.id %}" class="btn btn-outline-primary">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Pin & Reminder Row -->
+                    <div class="mt-3 pt-2 border-top">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <!-- Pin Button with Expiration Check -->
+                            <form method="POST" action="{% url 'toggle_pin_notification' item.notification.id %}" class="d-inline">
+                                {% csrf_token %}
+                                {% if item.notification.is_event_expired %}
+                                    <button type="button" class="btn btn-sm btn-outline-secondary pin-btn-disabled" disabled>
+                                        <i class="fas fa-thumbtack"></i> Pin
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-sm {% if item.is_pinned %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                                        <i class="fas fa-thumbtack"></i>
+                                        {% if item.is_pinned %}Unpin{% else %}Pin{% endif %}
+                                    </button>
+                                {% endif %}
+                            </form>
+
+                            <!-- Reminder Form with Expiration Check -->
+                            <form method="POST" action="{% url 'set_reminder' item.notification.id %}" class="d-flex gap-2">
+                                {% csrf_token %}
+                                <input type="datetime-local" name="reminder_time" 
+                                       class="form-control form-control-sm" 
+                                       style="width: auto;"
+                                       value="{{ item.reminder_time|date:'Y-m-d\\TH:i' }}"
+                                       {% if item.notification.is_event_expired %}disabled{% endif %}>
+                                <button type="submit" class="btn btn-warning btn-sm"
+                                        {% if item.notification.is_event_expired %}disabled{% endif %}>
+                                    <i class="fas fa-bell"></i>
+                                    {% if item.reminder_time %}Update{% else %}Set{% endif %} Reminder
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <!-- Warning Message for Expired Events -->
+                        {% if item.notification.is_event_expired %}
+                            <div class="warning-text mt-2">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Event has passed. Pin and reminder options are disabled.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+        {% endif %}
     {% empty %}
     <div class="col">
-        <div class="alert alert-info">
-            No notifications found.
-            {% if user.can_send_notifications %}
-                <a href="{% url 'notification_create' %}" class="alert-link">Create your first notification</a>
-            {% endif %}
+        <div class="alert alert-info text-center">
+            <i class="fas fa-bell-slash fa-2x mb-2 d-block"></i>
+            No notifications available.
         </div>
     </div>
     {% endfor %}
 </div>
+
+<script>
+function confirmDelete(notificationId, notificationTitle) {
+    if (confirm(`Delete "${notificationTitle}"? This cannot be undone.`)) {
+        window.location.href = `/notifications/${notificationId}/delete/`;
+    }
+}
+</script>
 {% endblock %}
