@@ -2,6 +2,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+import os
 
 class Notification(models.Model):
     CATEGORY_CHOICES = (
@@ -41,6 +42,16 @@ class Notification(models.Model):
     send_to_teachers = models.BooleanField(default=False)
     send_to_staff = models.BooleanField(default=False)
     
+    # ===== NEW: File Attachment Field =====
+    attachment = models.FileField(
+        upload_to='notification_attachments/%Y/%m/%d/',
+        null=True,
+        blank=True,
+        help_text="Upload PDF, Image, or Document (Max: 10MB)"
+    )
+    attachment_name = models.CharField(max_length=255, blank=True, null=True)
+    attachment_size = models.IntegerField(default=0)  # Size in bytes
+    
     class Meta:
         ordering = ['-published_at', '-created_at']
     
@@ -68,8 +79,31 @@ class Notification(models.Model):
         if total == 0:
             return 0
         return (self.get_read_count() / total) * 100
-
-
+    
+    def get_file_extension(self):
+        if self.attachment:
+            name, ext = os.path.splitext(self.attachment.name)
+            return ext.lower()
+        return ''
+    
+    def get_file_icon(self):
+        ext = self.get_file_extension()
+        icons = {
+            '.pdf': 'fa-file-pdf',
+            '.doc': 'fa-file-word',
+            '.docx': 'fa-file-word',
+            '.xls': 'fa-file-excel',
+            '.xlsx': 'fa-file-excel',
+            '.jpg': 'fa-file-image',
+            '.jpeg': 'fa-file-image',
+            '.png': 'fa-file-image',
+            '.gif': 'fa-file-image',
+            '.mp4': 'fa-file-video',
+            '.mp3': 'fa-file-audio',
+            '.zip': 'fa-file-archive',
+            '.txt': 'fa-file-alt',
+        }
+        return icons.get(ext, 'fa-file')
 class ReadStatus(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

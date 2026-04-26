@@ -2,30 +2,11 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Nehru Arts And Science College Kanhangad{% endblock %}
+{% block title %}NotifyHub - Nehru Arts And Science College Kanhangad{% endblock %}
 
 {% block content %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&display=swap');
-    
-    :root {
-        --primary-blue: #4A7B9D;
-        --primary-blue-dark: #3A6380;
-        --primary-blue-light: #6B96B5;
-        --accent-gold: #D4AF37;
-        --accent-gold-light: #F0C040;
-        --accent-gold-dark: #B8960C;
-        --white: #FFFFFF;
-        --light-bg: #F5F8FC;
-        --text-dark: #2C3E50;
-        --text-light: #6B7F8F;
-        --shadow-sm: 0 5px 20px rgba(0, 0, 0, 0.05);
-        --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.08);
-        --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.12);
-        --shadow-hover: 0 25px 50px rgba(212, 175, 55, 0.25);
-        --gradient-gold: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
-        --gradient-blue: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-light));
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
     
     * {
         margin: 0;
@@ -34,224 +15,304 @@
     }
     
     body {
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Inter', sans-serif;
+        background: #fafbfc;
         overflow-x: hidden;
-        background: var(--light-bg);
     }
     
-    /* ===== PAGE TRANSITION ===== */
-    .page-transition {
-        animation: pageReveal 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Floating Particles Animation */
+    .particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 1;
     }
     
-    @keyframes pageReveal {
-        0% { opacity: 0; transform: translateY(20px); }
-        100% { opacity: 1; transform: translateY(0); }
+    .particle {
+        position: absolute;
+        background: rgba(251, 191, 36, 0.15);
+        border-radius: 50%;
+        animation: floatParticle linear infinite;
     }
     
-    /* ===== HERO SECTION WITH CLEAR BACKGROUND ===== */
-    .hero-section {
+    @keyframes floatParticle {
+        0% {
+            transform: translateY(100vh) rotate(0deg);
+            opacity: 0;
+        }
+        10% {
+            opacity: 1;
+        }
+        90% {
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(-20vh) rotate(360deg);
+            opacity: 0;
+        }
+    }
+    
+    /* Hero Section */
+    .hero {
         position: relative;
-        min-height: 100vh;
+        min-height: 80vh;
         display: flex;
         align-items: center;
         justify-content: center;
+        text-align: center;
         overflow: hidden;
     }
     
-    .hero-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('{% static "images/college-bg.jpg" %}');
-    background-size: cover;
-    background-position: center;
-    z-index: 0;
-    animation: slowZoom 20s ease-out infinite alternate;
-    transform-origin: center;
-}
-
-/* ADD THIS - Light Blue Overlay */
-.hero-bg::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(75, 123, 157, 0.3);
-    pointer-events: none;
-    z-index: 1;
-}
-
-@keyframes slowZoom {
-    0% { transform: scale(1); }
-    100% { transform: scale(1.08); }
-}
-    /* Content directly on image - NO BACKGROUND */
+    /* College Background Image with Gradient Overlay */
+    .hero-bg-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('{% static "images/college-bg.jpg" %}');
+        background-size: cover;
+        background-position: center;
+        z-index: 1;
+    }
+    
+    /* Gradient Overlay - Professional Dark Overlay */
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, 
+            rgba(15, 23, 42, 0.92) 0%, 
+            rgba(30, 27, 75, 0.88) 50%, 
+            rgba(15, 23, 42, 0.92) 100%);
+        z-index: 2;
+    }
+    
+    .hero-bg-pattern {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.03;
+        z-index: 3;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    
     .hero-content {
         position: relative;
-        z-index: 10;
-        text-align: center;
-        padding: 0 20px;
-        max-width: 1000px;
+        z-index: 15;
+        max-width: 950px;
         margin: 0 auto;
-        animation: contentFloat 1s ease-out;
+        padding: 50px 32px;
+        text-align: center;
     }
     
-    @keyframes contentFloat {
-        0% { opacity: 0; transform: translateY(50px); }
-        100% { opacity: 1; transform: translateY(0); }
-    }
-    
-    .hero-badge {
-        display: inline-block;
-        background: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(8px);
-        padding: 8px 24px;
-        border-radius: 50px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        color: var(--accent-gold);
-        letter-spacing: 2px;
+    /* Animated Brand - CENTERED */
+    .brand {
         margin-bottom: 25px;
-        border: 1px solid rgba(212, 175, 55, 0.4);
-        animation: badgePulse 2s infinite;
+        animation: fadeInUp 0.8s ease;
+        display: inline-block;
     }
     
-    @keyframes badgePulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.8; transform: scale(1.02); }
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     
-    .hero-logo {
-        width: 100px;
-        height: 100px;
-        background: var(--white);
-        border-radius: 50%;
-        display: flex;
+    .brand-logo {
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
-        margin: 0 auto 30px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-        border: 3px solid var(--accent-gold);
-        animation: logoFloat 3s ease-in-out infinite, logoBounce 0.8s ease;
+        gap: 12px;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        padding: 12px 32px;
+        border-radius: 80px;
+        margin-bottom: 25px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        animation: pulseGlow 2s ease-in-out infinite;
     }
     
-    @keyframes logoFloat {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
+    @keyframes pulseGlow {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.3);
+        }
+        50% {
+            box-shadow: 0 0 0 15px rgba(251, 191, 36, 0);
+        }
     }
     
-    @keyframes logoBounce {
-        0% { opacity: 0; transform: scale(0.3); }
-        50% { opacity: 1; transform: scale(1.05); }
-        70% { transform: scale(0.95); }
-        100% { transform: scale(1); }
+    .brand-logo i {
+        font-size: 32px;
+        color: #fbbf24;
+        animation: ring 1s ease;
     }
     
-    .hero-logo i {
-        font-size: 48px;
-        color: var(--accent-gold);
-        transition: transform 0.3s ease;
+    @keyframes ring {
+        0% { transform: rotate(0deg); }
+        25% { transform: rotate(15deg); }
+        50% { transform: rotate(-15deg); }
+        75% { transform: rotate(10deg); }
+        100% { transform: rotate(0deg); }
     }
     
-    .hero-logo:hover i {
-        transform: scale(1.1);
-    }
-    
-    .hero-title {
-        font-family: 'Playfair Display', serif;
-        font-size: 2.2rem;
+    .brand-logo span {
+        font-size: 2rem;
         font-weight: 800;
-        color: var(--white);
-        margin-bottom: 15px;
+        color: white;
         letter-spacing: 1px;
-        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
-        line-height: 1.3;
-        animation: titleGlow 3s ease-in-out infinite;
     }
     
-    @keyframes titleGlow {
-        0%, 100% { text-shadow: 2px 2px 8px rgba(0,0,0,0.5); }
-        50% { text-shadow: 2px 2px 15px rgba(212, 175, 55, 0.3); }
+    .brand-logo span span {
+        color: #fbbf24;
+        font-size: 2.1rem;
     }
     
-    @media (min-width: 768px) {
-        .hero-title {
-            font-size: 3.2rem;
+    /* NOTIFYHUB Main Title */
+    .hero-main-title {
+        font-size: 3.8rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 20px;
+        letter-spacing: 2px;
+        animation: fadeInUp 0.8s ease 0.1s both;
+    }
+    
+    @media (max-width: 768px) {
+        .hero-main-title {
+            font-size: 2.2rem;
+        }
+        .brand-logo span {
+            font-size: 1.4rem;
+        }
+        .brand-logo span span {
+            font-size: 1.5rem;
+        }
+        .college-highlight {
+            font-size: 1.6rem !important;
         }
     }
     
-    @media (min-width: 992px) {
-        .hero-title {
-            font-size: 4rem;
-        }
-    }
-    
-    .hero-title span {
-        color: var(--accent-gold);
-        font-weight: 700;
+    .hero-main-title span {
+        color: #fbbf24;
         position: relative;
         display: inline-block;
-        animation: textGlow 2s ease-in-out infinite;
     }
     
-    @keyframes textGlow {
-        0%, 100% { text-shadow: 0 0 0px rgba(212, 175, 55, 0); }
-        50% { text-shadow: 0 0 20px rgba(212, 175, 55, 0.5); }
+    .hero-main-title span::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: #fbbf24;
+        border-radius: 2px;
+        animation: expandLine 1s ease 1.2s forwards;
+        transform: scaleX(0);
+        transform-origin: left;
     }
     
-    .hero-subtitle {
+    @keyframes expandLine {
+        10%, 100% {
+            transform: scaleX(1);
+        }
+    }
+    
+    /* College Name - PROMINENT & HIGHLIGHTED */
+    .college-highlight {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+        animation: fadeInUp 0.8s ease 0.15s both;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .college-highlight i {
+        color: #fbbf24;
+        margin-right: 10px;
+        font-size: 1.8rem;
+    }
+    
+    .college-highlight span {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .college-highlight span::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, #fbbf24, transparent);
+        animation: slideLine 1.5s ease infinite;
+    }
+    
+    @keyframes slideLine {
+        0% { width: 0; opacity: 0; }
+        50% { width: 100%; opacity: 1; }
+        100% { width: 0; opacity: 0; }
+    }
+    
+    .college-sub {
         font-size: 1rem;
-        color: rgba(255, 255, 255, 0.95);
+        color: #cbd5e1;
+        margin-bottom: 20px;
+        letter-spacing: 1px;
+        animation: fadeInUp 0.8s ease 0.2s both;
+    }
+    
+    .hero-tagline {
+        font-size: 1rem;
+        color: #94a3b8;
         max-width: 550px;
         margin: 0 auto 30px;
-        line-height: 1.7;
-        font-weight: 400;
-        text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+        line-height: 1.6;
+        animation: fadeInUp 0.8s ease 0.3s both;
     }
     
-    @media (min-width: 768px) {
-        .hero-subtitle {
-            font-size: 1.1rem;
-        }
-    }
-    
-    .hero-buttons {
+    .btn-group {
         display: flex;
-        flex-direction: column;
-        gap: 15px;
-        align-items: center;
-        margin-top: 30px;
-    }
-    
-    @media (min-width: 576px) {
-        .hero-buttons {
-            flex-direction: row;
-            justify-content: center;
-            gap: 25px;
-        }
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+        animation: fadeInUp 0.8s ease 0.4s both;
     }
     
     .btn-primary {
-        background: var(--white);
-        color: var(--primary-blue);
-        padding: 14px 38px;
+        background: #fbbf24;
+        color: #0f172a;
+        padding: 14px 36px;
         border-radius: 50px;
         font-weight: 700;
         font-size: 1rem;
-        border: none;
-        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         text-decoration: none;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-        min-width: 200px;
-        text-align: center;
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
     }
     
     .btn-primary::before {
@@ -261,11 +322,10 @@
         left: 50%;
         width: 0;
         height: 0;
+        background: rgba(255, 255, 255, 0.4);
         border-radius: 50%;
-        background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
         transform: translate(-50%, -50%);
         transition: width 0.6s, height 0.6s;
-        z-index: -1;
     }
     
     .btn-primary:hover::before {
@@ -274,306 +334,302 @@
     }
     
     .btn-primary:hover {
-        transform: translateY(-5px) scale(1.05);
-        box-shadow: 0 15px 30px rgba(212, 175, 55, 0.3);
-        color: var(--white);
+        background: #f59e0b;
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 30px -5px rgba(251, 191, 36, 0.5);
     }
     
-    .btn-outline {
-        background: transparent;
-        color: var(--white);
-        padding: 14px 38px;
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+        color: white;
+        padding: 14px 36px;
         border-radius: 50px;
         font-weight: 700;
         font-size: 1rem;
-        border: 2px solid var(--accent-gold);
-        transition: all 0.4s ease;
         text-decoration: none;
-        display: inline-block;
-        min-width: 200px;
-        text-align: center;
-        backdrop-filter: blur(5px);
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-    }
-    
-    .btn-outline:hover {
-        background: var(--accent-gold);
-        color: var(--primary-blue);
-        transform: translateY(-5px) scale(1.05);
-        box-shadow: 0 15px 30px rgba(212, 175, 55, 0.3);
-    }
-    
-    /* ===== STATS SECTION ===== */
-    .stats-section {
-        background: var(--white);
-        padding: 60px 20px;
-        position: relative;
-        margin-top: -50px;
-        z-index: 20;
-        border-radius: 35px;
-        box-shadow: var(--shadow-lg);
-    }
-    
-    @media (min-width: 768px) {
-        .stats-section {
-            padding: 70px 0;
-        }
-    }
-    
-    .stats-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 30px;
-        max-width: 800px;
-        margin: 0 auto;
-        justify-content: center;
-    }
-    
-    @media (min-width: 768px) {
-        .stats-grid {
-            flex-direction: row;
-            gap: 60px;
-        }
-    }
-    
-    .stat-item {
-        text-align: center;
-        padding: 30px 25px;
-        background: var(--light-bg);
-        border-radius: 25px;
-        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        flex: 1;
-        cursor: pointer;
-        border: 1px solid rgba(75, 123, 157, 0.1);
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.2);
         position: relative;
         overflow: hidden;
     }
     
-    .stat-item::after {
+    .btn-secondary::before {
         content: '';
         position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 3px;
-        background: var(--gradient-gold);
-        transform: scaleX(0);
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn-secondary:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-3px) scale(1.05);
+        border-color: #fbbf24;
+        box-shadow: 0 10px 30px -5px rgba(251, 191, 36, 0.2);
+    }
+    
+    /* Rotation effect on button icons */
+    .btn-primary i, .btn-secondary i {
         transition: transform 0.4s ease;
     }
     
-    .stat-item:hover::after {
-        transform: scaleX(1);
+    .btn-primary:hover i, .btn-secondary:hover i {
+        transform: rotate(15deg) scale(1.1);
     }
     
-    .stat-item:hover {
-        transform: translateY(-15px) scale(1.03);
-        background: var(--white);
-        box-shadow: var(--shadow-hover);
-        border-color: var(--accent-gold);
+    .college-address {
+        margin-top: 40px;
+        padding-top: 25px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        animation: fadeInUp 0.8s ease 0.5s both;
+    }
+    
+    .college-address p {
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+    
+    .college-address i {
+        color: #fbbf24;
+        margin-right: 6px;
+        transition: transform 0.3s ease;
+    }
+    
+    .college-address i:hover {
+        transform: scale(1.2);
+    }
+    
+    /* Stats Section */
+    .stats {
+        padding: 60px 32px;
+        max-width: 1280px;
+        margin: 0 auto;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 32px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    @media (max-width: 640px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 32px;
+        border-radius: 24px;
+        text-align: center;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid #e2e8f0;
+        animation: fadeScale 0.6s ease forwards;
+        opacity: 0;
+    }
+    
+    @keyframes fadeScale {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        border-color: #fbbf24;
     }
     
     .stat-number {
-        font-size: 2.8rem;
+        font-size: 2.5rem;
         font-weight: 800;
-        color: var(--primary-blue);
-        margin-bottom: 10px;
-        font-family: 'Playfair Display', serif;
-        transition: all 0.3s ease;
+        color: #0f172a;
+        margin-bottom: 8px;
+        transition: color 0.3s ease;
     }
     
-    .stat-item:hover .stat-number {
-        color: var(--accent-gold);
-        transform: scale(1.05);
-    }
-    
-    @media (min-width: 768px) {
-        .stat-number {
-            font-size: 3.5rem;
-        }
+    .stat-card:hover .stat-number {
+        color: #fbbf24;
     }
     
     .stat-label {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
+        color: #64748b;
         text-transform: uppercase;
-        letter-spacing: 2px;
-        color: var(--text-light);
-        font-weight: 500;
+        letter-spacing: 1px;
     }
     
-    /* ===== FEATURES SECTION ===== */
-    .features-section {
-        padding: 80px 20px;
-        background: var(--light-bg);
+    /* Features Section */
+    .features {
+        background: #ffffff;
+        padding: 80px 32px;
     }
     
-    @media (min-width: 768px) {
-        .features-section {
-            padding: 100px 0;
-        }
+    .features-container {
+        max-width: 1280px;
+        margin: 0 auto;
     }
     
     .section-header {
         text-align: center;
-        max-width: 700px;
-        margin: 0 auto 60px;
+        margin-bottom: 60px;
     }
     
-    .section-badge {
-        display: inline-block;
-        background: rgba(212, 175, 55, 0.1);
-        padding: 6px 20px;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--accent-gold);
-        letter-spacing: 2px;
-        margin-bottom: 20px;
-        animation: badgePulse 2s infinite;
-    }
-    
-    .section-title {
+    .section-header h2 {
         font-size: 2rem;
         font-weight: 700;
-        color: var(--text-dark);
-        margin-bottom: 20px;
-        font-family: 'Playfair Display', serif;
-        line-height: 1.3;
+        color: #0f172a;
+        margin-bottom: 16px;
+        position: relative;
+        display: inline-block;
     }
     
-    @media (min-width: 768px) {
-        .section-title {
-            font-size: 2.5rem;
-        }
+    .section-header h2::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 3px;
+        background: #fbbf24;
+        border-radius: 2px;
     }
     
-    .section-subtitle {
-        color: var(--text-light);
-        font-size: 1rem;
-        line-height: 1.7;
+    .section-header p {
+        color: #64748b;
+        max-width: 600px;
+        margin: 0 auto;
     }
     
     .features-grid {
         display: grid;
-        grid-template-columns: 1fr;
-        gap: 25px;
-        max-width: 1200px;
-        margin: 0 auto;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
     }
     
-    @media (min-width: 640px) {
+    @media (max-width: 900px) {
         .features-grid {
             grid-template-columns: repeat(2, 1fr);
-            gap: 30px;
         }
     }
     
-    @media (min-width: 992px) {
+    @media (max-width: 640px) {
         .features-grid {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 35px;
+            grid-template-columns: 1fr;
         }
     }
     
-    .feature-card {
-        background: var(--white);
-        padding: 35px 25px;
-        border-radius: 25px;
+    .feature {
         text-align: center;
-        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        position: relative;
-        overflow: hidden;
-        box-shadow: var(--shadow-sm);
-        border: 1px solid rgba(75, 123, 157, 0.08);
-        cursor: pointer;
+        padding: 32px;
+        background: #f8fafc;
+        border-radius: 20px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid #e2e8f0;
+        animation: fadeUp 0.6s ease forwards;
+        opacity: 0;
     }
     
-    .feature-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: var(--gradient-gold);
-        transform: scaleX(0);
-        transition: transform 0.5s ease;
-        transform-origin: left;
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     
-    .feature-card:hover::before {
-        transform: scaleX(1);
-    }
-    
-    .feature-card:hover {
-        transform: translateY(-15px);
-        box-shadow: var(--shadow-hover);
-        border-color: var(--accent-gold);
+    .feature:hover {
+        transform: translateY(-8px);
+        border-color: #fbbf24;
+        background: white;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     }
     
     .feature-icon {
-        width: 75px;
-        height: 75px;
-        background: linear-gradient(135deg, rgba(75, 123, 157, 0.1), rgba(212, 175, 55, 0.05));
-        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        border-radius: 18px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 25px;
-        transition: all 0.5s ease;
+        margin: 0 auto 20px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    .feature-card:hover .feature-icon {
-        background: var(--gradient-gold);
+    .feature:hover .feature-icon {
         transform: rotateY(360deg) scale(1.1);
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
     }
     
     .feature-icon i {
-        font-size: 32px;
-        color: var(--accent-gold);
-        transition: all 0.3s ease;
+        font-size: 26px;
+        color: #0f172a;
     }
     
-    .feature-card:hover .feature-icon i {
-        color: var(--white);
-        transform: scale(1.1);
-    }
-    
-    .feature-title {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: var(--text-dark);
-        margin-bottom: 12px;
+    .feature h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 10px;
         transition: color 0.3s ease;
     }
     
-    .feature-card:hover .feature-title {
-        color: var(--accent-gold);
+    .feature:hover h3 {
+        color: #fbbf24;
     }
     
-    .feature-text {
-        color: var(--text-light);
-        line-height: 1.6;
+    .feature p {
         font-size: 0.85rem;
+        color: #64748b;
+        line-height: 1.5;
     }
     
-    /* ===== CTA SECTION ===== */
-    .cta-section {
-    background: linear-gradient(135deg, #9b5cce, #5114c4);
-    padding: 70px 20px;
-    position: relative;
-    overflow: hidden;
-    margin: 50px 0 0 0;
-    box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
-}
-    .cta-section::before {
+    /* CTA Section */
+    .cta {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        padding: 70px 32px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .cta::before {
         content: '';
         position: absolute;
         top: -50%;
         left: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle, rgba(8, 81, 216, 0.15), transparent);
-        animation: rotateBg 25s linear infinite;
+        background: radial-gradient(circle, rgba(251, 191, 36, 0.08), transparent);
+        animation: rotateBg 20s linear infinite;
     }
     
     @keyframes rotateBg {
@@ -581,367 +637,227 @@
         to { transform: rotate(360deg); }
     }
     
-    .cta-section::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(116, 206, 14, 0.2), transparent);
-        animation: shine 3s infinite;
-    }
-    
-    @keyframes shine {
-        0% { left: -100%; }
-        20%, 100% { left: 100%; }
-    }
-    
-    .cta-content {
-        text-align: center;
-        max-width: 750px;
+    .cta-container {
+        max-width: 700px;
         margin: 0 auto;
         position: relative;
-        z-index: 1;
+        z-index: 2;
     }
     
-    .cta-title {
+    .cta h2 {
         font-size: 2rem;
-        font-weight: 800;
-        color: var(--white);
-        margin-bottom: 20px;
-        font-family: 'Playfair Display', serif;
-        animation: titlePulse 2s ease-in-out infinite;
-    }
-    
-    @keyframes titlePulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.02); }
-    }
-    
-    @media (min-width: 768px) {
-        .cta-title {
-            font-size: 2.5rem;
-        }
-    }
-    
-    .cta-text {
-        font-size: 1rem;
-        color: rgba(255, 255, 255, 0.95);
-        margin-bottom: 35px;
-        line-height: 1.7;
-    }
-    
-    @media (min-width: 768px) {
-        .cta-text {
-            font-size: 1.1rem;
-        }
-    }
-    
-    .btn-cta {
-        background: var(--white);
-        color: var(--primary-blue);
-        padding: 14px 40px;
-        border-radius: 50px;
         font-weight: 700;
-        font-size: 1rem;
-        text-decoration: none;
-        display: inline-block;
-        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        margin: 0 10px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        min-width: 200px;
+        color: white;
+        margin-bottom: 16px;
         position: relative;
-        overflow: hidden;
+        display: inline-block;
     }
     
-    .btn-cta::before {
+    .cta h2::after {
         content: '';
         position: absolute;
-        top: 50%;
+        bottom: -10px;
         left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-        z-index: -1;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 3px;
+        background: #fbbf24;
+        border-radius: 2px;
     }
     
-    .btn-cta:hover::before {
-        width: 300px;
-        height: 300px;
-    }
-    
-    .btn-cta:hover {
-        transform: translateY(-5px) scale(1.05);
-        box-shadow: 0 20px 40px rgba(212, 175, 55, 0.3);
-        color: var(--white);
-    }
-    
-    .btn-cta-outline {
-        background: transparent;
-        color: var(--white);
-        padding: 14px 40px;
-        border-radius: 50px;
-        font-weight: 700;
-        font-size: 1rem;
-        text-decoration: none;
-        display: inline-block;
-        transition: all 0.4s ease;
-        margin: 10px 0 0 0;
-        border: 2px solid var(--accent-gold);
-        min-width: 200px;
-        backdrop-filter: blur(5px);
-    }
-    
-    @media (min-width: 576px) {
-        .btn-cta-outline {
-            margin: 0 0 0 15px;
-        }
-    }
-    
-    .btn-cta-outline:hover {
-        background: var(--accent-gold);
-        color: var(--primary-blue);
-        transform: translateY(-5px) scale(1.05);
+    .cta p {
+        color: #94a3b8;
+        margin-bottom: 32px;
     }
     
     .cta-buttons {
         display: flex;
-        flex-direction: column;
-        gap: 15px;
-        align-items: center;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
     }
     
-    @media (min-width: 576px) {
-        .cta-buttons {
-            flex-direction: row;
-            justify-content: center;
-            gap: 25px;
-        }
+    /* Footer */
+    .footer {
+        background: white;
+        padding: 40px 32px;
+        text-align: center;
+        border-top: 1px solid #e2e8f0;
     }
     
-    /* ===== FOOTER ===== */
-    .college-footer {
-        background: var(--white);
-        color: var(--text-dark);
-        padding: 40px 20px;
-        border-top: 1px solid rgba(212, 175, 55, 0.2);
+    .footer p {
+        font-size: 0.8rem;
+        color: #64748b;
     }
     
-    .footer-text {
-        opacity: 0.7;
-        font-size: 0.9rem;
-        transition: opacity 0.3s ease;
+    .footer i {
+        color: #fbbf24;
+        animation: heartBeat 1.5s ease-in-out infinite;
+        transition: transform 0.3s ease;
     }
     
-    .footer-text:hover {
-        opacity: 1;
-        color: var(--accent-gold);
+    .footer i:hover {
+        transform: scale(1.2);
     }
     
-    /* ===== SCROLL REVEAL ===== */
-    .reveal {
-        opacity: 0;
-        transform: translateY(40px);
-        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    @keyframes heartBeat {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.15); }
     }
     
-    .reveal.active {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    
-    .reveal-delay-1 { transition-delay: 0.1s; }
-    .reveal-delay-2 { transition-delay: 0.2s; }
-    .reveal-delay-3 { transition-delay: 0.3s; }
-    .reveal-delay-4 { transition-delay: 0.4s; }
-    .reveal-delay-5 { transition-delay: 0.5s; }
-    .reveal-delay-6 { transition-delay: 0.6s; }
-    .reveal-delay-7 { transition-delay: 0.7s; }
-    
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-        .hero-title {
-            font-size: 1.8rem;
-        }
-        
-        .hero-logo {
-            width: 70px;
-            height: 70px;
-        }
-        
-        .hero-logo i {
-            font-size: 32px;
-        }
-        
-        .stat-number {
-            font-size: 2rem;
-        }
-        
-        .stats-section {
-            margin-top: -30px;
-        }
-        
-        .feature-card {
-            padding: 25px 18px;
-        }
-        
-        .feature-icon {
-            width: 55px;
-            height: 55px;
-        }
-        
-        .feature-icon i {
-            font-size: 24px;
-        }
-    }
+    /* Staggered Animations */
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .feature:nth-child(1) { animation-delay: 0.1s; }
+    .feature:nth-child(2) { animation-delay: 0.2s; }
+    .feature:nth-child(3) { animation-delay: 0.3s; }
+    .feature:nth-child(4) { animation-delay: 0.4s; }
+    .feature:nth-child(5) { animation-delay: 0.5s; }
+    .feature:nth-child(6) { animation-delay: 0.6s; }
 </style>
 
-<!-- Hero Section - College Name & Logo Directly on Clear Background Image -->
-<div class="hero-section">
-    <div class="hero-bg"></div>
+<!-- Hero Section -->
+<section class="hero">
+    <!-- College Background Image -->
+    <div class="hero-bg-image"></div>
+    <!-- Gradient Overlay -->
+    <div class="hero-overlay"></div>
+    <div class="hero-bg-pattern"></div>
+    
+    <!-- Floating Particles -->
+    <div class="particles" id="particles"></div>
     
     <div class="hero-content">
-        <div class="hero-badge">EST. 1965</div>
-        
-        <div class="hero-logo">
-            <i class="fas fa-university"></i>
+        <!-- Brand Logo - Centered -->
+        <div class="brand">
+            <div class="brand-logo">
+                <i class="fas fa-bell"></i>
+                <span>Notify<span>Hub</span></span>
+            </div>
         </div>
         
-        <h1 class="hero-title">
-            Nehru Arts & Science <br>
-            <span>College, Kanhangad</span>
+        <!-- NOTIFYHUB Tagline -->
+        <h1 class="hero-main-title">
+            Real-Time <span>Notifications</span>
         </h1>
         
-        <p class="hero-subtitle">
-            A premier institution dedicated to excellence in education, research, and innovation.
+        <!-- College Name - PROMINENT & HIGHLIGHTED -->
+        <div class="college-highlight">
+            <i class="fas fa-university"></i> 
+            Nehru Arts & Science <span>College, Kanhangad</span>
+        </div>
+        
+        <div class="college-sub">
+            Established 1965 | Affiliated to Kannur University
+        </div>
+        
+        <p class="hero-tagline">
+            Seamless communication for students, faculty, and staff — instant updates, smart reminders, and powerful analytics.
         </p>
         
-        <div class="hero-buttons">
+        <div class="btn-group">
             <a href="{% url 'student_notifications' %}" class="btn-primary">
                 <i class="fas fa-bell"></i> View Notifications
             </a>
-            <a href="{% url 'login' %}" class="btn-outline">
+            <a href="{% url 'login' %}" class="btn-secondary">
                 <i class="fas fa-sign-in-alt"></i> Staff Login
             </a>
         </div>
-    </div>
-</div>
-
-<!-- Statistics Section -->
-<div class="container">
-    <div class="stats-section">
-        <div class="stats-grid">
-            <div class="stat-item reveal reveal-delay-1">
-                <div class="stat-number" id="stat-notifications">0</div>
-                <div class="stat-label">Notifications Sent</div>
-            </div>
-            <div class="stat-item reveal reveal-delay-2">
-                <div class="stat-number" id="stat-users">0</div>
-                <div class="stat-label">Faculty & Staff</div>
-            </div>
+        
+        <div class="college-address">
+            <p><i class="fas fa-map-marker-alt"></i> Kanhangad, Kasaragod District, Kerala - 671315</p>
         </div>
     </div>
-</div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number" id="stat-notifications">0</div>
+            <div class="stat-label">Notifications Sent</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="stat-users">0</div>
+            <div class="stat-label">Faculty & Staff</div>
+        </div>
+    </div>
+</section>
 
 <!-- Features Section -->
-<div class="features-section">
-    <div class="container">
-        <div class="section-header reveal reveal-delay-1">
-            <div class="section-badge">POWERFUL FEATURES</div>
-            <h2 class="section-title">Everything You Need</h2>
-            <p class="section-subtitle">Making college communication seamless and efficient</p>
+<section class="features">
+    <div class="features-container">
+        <div class="section-header">
+            <h2>Everything You Need</h2>
+            <p>Making college communication seamless and efficient</p>
         </div>
-        
         <div class="features-grid">
-            <div class="feature-card reveal reveal-delay-2">
+            <div class="feature">
                 <div class="feature-icon">
                     <i class="fas fa-bolt"></i>
                 </div>
-                <h3 class="feature-title">Real-Time Updates</h3>
-                <p class="feature-text">Instant notifications delivered immediately to all users.</p>
+                <h3>Real-Time Updates</h3>
+                <p>Instant notifications delivered immediately to all users.</p>
             </div>
-            
-            <div class="feature-card reveal reveal-delay-3">
+            <div class="feature">
                 <div class="feature-icon">
                     <i class="fas fa-shield-alt"></i>
                 </div>
-                <h3 class="feature-title">Secure Access</h3>
-                <p class="feature-text">Role-based access control ensuring data security.</p>
+                <h3>Secure Access</h3>
+                <p>Role-based access control ensuring data security.</p>
             </div>
-            
-            <div class="feature-card reveal reveal-delay-4">
+            <div class="feature">
                 <div class="feature-icon">
                     <i class="fas fa-chart-line"></i>
                 </div>
-                <h3 class="feature-title">Analytics Dashboard</h3>
-                <p class="feature-text">Track read rates and engagement metrics.</p>
+                <h3>Analytics Dashboard</h3>
+                <p>Track read rates and engagement metrics.</p>
             </div>
-            
-            <div class="feature-card reveal reveal-delay-5">
+            <div class="feature">
                 <div class="feature-icon">
                     <i class="fas fa-thumbtack"></i>
                 </div>
-                <h3 class="feature-title">Pin Important Notifications</h3>
-                <p class="feature-text">Pin and highlight critical announcements for better visibility.</p>
+                <h3>Pin Important Notifications</h3>
+                <p>Pin and highlight critical announcements.</p>
             </div>
-            
-            <div class="feature-card reveal reveal-delay-6">
+            <div class="feature">
                 <div class="feature-icon">
                     <i class="fas fa-envelope"></i>
                 </div>
-                <h3 class="feature-title">Email Reminders</h3>
-                <p class="feature-text">Get email reminders for important deadlines and events.</p>
+                <h3>Email Reminders</h3>
+                <p>Get reminders for important deadlines and events.</p>
             </div>
-            
-            <div class="feature-card reveal reveal-delay-7">
+            <div class="feature">
                 <div class="feature-icon">
                     <i class="fas fa-tags"></i>
                 </div>
-                <h3 class="feature-title">Smart Categories</h3>
-                <p class="feature-text">Color-coded categories for easy identification of notification types.</p>
+                <h3>Smart Categories</h3>
+                <p>Color-coded categories for easy identification.</p>
             </div>
         </div>
     </div>
-</div>
+</section>
 
 <!-- CTA Section -->
-<div class="cta-section">
-    <div class="container">
-        <div class="cta-content">
-            <h2 class="cta-title">Stay Connected</h2>
-            <p class="cta-text">Get all college announcements and updates in one place</p>
-            <div class="cta-buttons">
-                <a href="{% url 'student_notifications' %}" class="btn-cta">
-                    <i class="fas fa-bell"></i> View Notifications
-                </a>
-                <a href="{% url 'login' %}" class="btn-cta-outline">
-                    <i class="fas fa-sign-in-alt"></i> Staff Access
-                </a>
-            </div>
+<section class="cta">
+    <div class="cta-container">
+        <h2>Stay Connected with NotifyHub</h2>
+        <p>Get all college announcements and updates in one place</p>
+        <div class="cta-buttons">
+            <a href="{% url 'student_notifications' %}" class="btn-primary">
+                <i class="fas fa-bell"></i> View Notifications
+            </a>
+            <a href="{% url 'login' %}" class="btn-secondary">
+                <i class="fas fa-sign-in-alt"></i> Staff Access
+            </a>
         </div>
     </div>
-</div>
+</section>
 
 <!-- Footer -->
-<div class="college-footer">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-8">
-                <h5><i class="fas fa-university me-2"></i> Nehru Arts And Science College</h5>
-                <p class="footer-text">Kanhangad, Kasaragod District, Kerala - 671315</p>
-                <p class="footer-text">Established 1965 | Affiliated to Kannur University</p>
-            </div>
-            <div class="col-md-4 text-md-end">
-                <p class="footer-text">© 2026 Notification Management System</p>
-                <p class="footer-text">All rights reserved</p>
-            </div>
-        </div>
-    </div>
-</div>
+<footer class="footer">
+    <p><i class="fas fa-heart"></i> NotifyHub © 2026 | Nehru Arts & Science College, Kanhangad</p>
+</footer>
 
 <script>
 // Number animation
@@ -972,46 +888,20 @@ document.addEventListener('DOMContentLoaded', function() {
             element.textContent = Math.floor(current).toLocaleString();
         }, 25);
     }
-});
-
-// Scroll reveal animation
-const revealElements = document.querySelectorAll('.reveal');
-
-function checkReveal() {
-    revealElements.forEach(element => {
-        const elementTop = element.getBoundingClientRect().top;
-        const windowHeight = window.innerHeight;
-        
-        if (elementTop < windowHeight - 100) {
-            element.classList.add('active');
-        }
-    });
-}
-
-window.addEventListener('load', checkReveal);
-window.addEventListener('scroll', checkReveal);
-
-// Add hover animation to feature cards
-document.querySelectorAll('.feature-card').forEach(card => {
-    card.addEventListener('mouseenter', function() {
-        this.style.transition = 'all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-    });
-});
-
-// Add pulse animation to stat numbers on hover
-document.querySelectorAll('.stat-item').forEach(item => {
-    item.addEventListener('mouseenter', function() {
-        const number = this.querySelector('.stat-number');
-        if (number) {
-            number.style.transform = 'scale(1.05)';
-        }
-    });
-    item.addEventListener('mouseleave', function() {
-        const number = this.querySelector('.stat-number');
-        if (number) {
-            number.style.transform = 'scale(1)';
-        }
-    });
+    
+    // Create floating particles
+    const particlesContainer = document.getElementById('particles');
+    for (let i = 0; i < 30; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        const size = Math.random() * 8 + 2;
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDuration = Math.random() * 8 + 4 + 's';
+        particle.style.animationDelay = Math.random() * 5 + 's';
+        particlesContainer.appendChild(particle);
+    }
 });
 </script>
 {% endblock %}

@@ -11,7 +11,7 @@
                 </h4>
             </div>
             <div class="card-body">
-                <form method="post" id="notificationForm">
+                <form method="post" id="notificationForm" enctype="multipart/form-data">
                     {% csrf_token %}
                     
                     <!-- Title Field -->
@@ -39,6 +39,25 @@
                         {{ form.category }}
                     </div>
                     {% endif %}
+                    
+                    <!-- ===== FILE ATTACHMENT SECTION (NEW) ===== -->
+                    <div class="mb-3">
+                        <label for="{{ form.attachment.id_for_label }}" class="form-label">
+                            <i class="bi bi-paperclip"></i> Attachment (Optional)
+                        </label>
+                        {{ form.attachment }}
+                        <small class="text-muted d-block mt-1">
+                            <i class="bi bi-info-circle"></i> 
+                            Supported formats: PDF, DOC, DOCX, JPG, PNG, XLS, XLSX (Max: 10MB)
+                        </small>
+                        <div id="fileInfo" class="mt-2" style="display: none;">
+                            <div class="alert alert-info">
+                                <i class="bi bi-file-earmark"></i> 
+                                <span id="fileName"></span> - 
+                                <span id="fileSize"></span>
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Target Audience Section for Principal -->
                     {% if user.role == 'principal' %}
@@ -101,14 +120,6 @@
                         {{ form.event_date }}
                     </div>
                     
-                    <!-- Draft Checkbox -->
-                    <!--<div class="mb-3 form-check">
-                        {{ form.is_draft }}
-                        <label class="form-check-label" for="{{ form.is_draft.id_for_label }}">
-                            <i class="bi bi-pencil"></i> Save as draft
-                        </label>
-                    </div>-->
-                    
                     <!-- Action Buttons -->
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <button type="submit" name="publish" value="publish" class="btn btn-primary me-md-2">
@@ -138,7 +149,12 @@
                 <div id="preview" class="notification-preview">
                     <h5 id="preview-title">Notification Title</h5>
                     <p id="preview-message" class="text-muted">Your message will appear here...</p>
-                    <span id="preview-audience" class="badge bg-info">
+                    <div id="preview-attachment" style="display: none;">
+                        <span class="badge bg-info">
+                            <i class="bi bi-paperclip"></i> Attachment will be included
+                        </span>
+                    </div>
+                    <span id="preview-audience" class="badge bg-info mt-2">
                         {% if user.role == 'principal' %}To: Selected Groups{% else %}To: All Students{% endif %}
                     </span>
                 </div>
@@ -153,19 +169,45 @@
 document.addEventListener('DOMContentLoaded', function() {
     const titleInput = document.getElementById('{{ form.title.id_for_label }}');
     const messageInput = document.getElementById('{{ form.message.id_for_label }}');
+    const attachmentInput = document.querySelector('input[type="file"]');
     const previewTitle = document.getElementById('preview-title');
     const previewMessage = document.getElementById('preview-message');
     const previewAudience = document.getElementById('preview-audience');
+    const previewAttachment = document.getElementById('preview-attachment');
+    const fileInfoDiv = document.getElementById('fileInfo');
+    const fileNameSpan = document.getElementById('fileName');
+    const fileSizeSpan = document.getElementById('fileSize');
     
+    // Title preview
     if (titleInput) {
         titleInput.addEventListener('input', function() {
             previewTitle.textContent = this.value || 'Notification Title';
         });
     }
     
+    // Message preview
     if (messageInput) {
         messageInput.addEventListener('input', function() {
             previewMessage.textContent = this.value || 'Your message will appear here...';
+        });
+    }
+    
+    // File attachment preview
+    if (attachmentInput) {
+        attachmentInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Show file info
+                fileInfoDiv.style.display = 'block';
+                fileNameSpan.textContent = file.name;
+                fileSizeSpan.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                
+                // Show attachment preview badge
+                previewAttachment.style.display = 'block';
+            } else {
+                fileInfoDiv.style.display = 'none';
+                previewAttachment.style.display = 'none';
+            }
         });
     }
     
@@ -187,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (previewAudience) {
                 previewAudience.textContent = 'To: No one (draft)';
-                previewAudience.className = 'badge bg-warning';
+                previewAudience.className = 'badge bg-warning mt-2';
             }
         } else {
             if (audienceMsg) {
@@ -195,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (previewAudience) {
                 previewAudience.textContent = 'To: ' + selected.join(', ');
-                previewAudience.className = 'badge bg-info';
+                previewAudience.className = 'badge bg-info mt-2';
             }
         }
     }

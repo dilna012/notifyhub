@@ -118,6 +118,24 @@
         gap: 4px;
     }
     
+    /* ===== ATTACHMENT BADGE STYLES (NEW - STEP 6/7) ===== */
+    .attachment-badge {
+        background: #e0f2fe;
+        color: #0369a1;
+        border-radius: 20px;
+        padding: 4px 10px;
+        font-size: 10px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-left: 8px;
+    }
+    
+    .attachment-badge i {
+        font-size: 10px;
+    }
+    
     /* Filter Info Bar */
     .filter-info {
         background: #e3f2fd;
@@ -127,6 +145,86 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+    }
+    
+    /* Auto-refresh Styles */
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .new-notification {
+        animation: slideIn 0.5s ease-out;
+        border-left: 4px solid #fbbf24;
+        background: #fffbeb;
+    }
+    
+    .toast-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: slideInRight 0.3s ease-out;
+        cursor: pointer;
+    }
+    
+    .toast-notification button {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+    }
+    
+    .toast-notification button:hover {
+        opacity: 0.8;
+    }
+    
+    .auto-refresh-badge {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 999;
+    }
+    
+    .auto-refresh-badge i {
+        color: #22c55e;
+        animation: blink 1s infinite;
+    }
+    
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
     }
     
     @keyframes fadeInUp {
@@ -164,7 +262,13 @@
 </div>
 {% endif %}
 
-<div class="row">
+<!-- Auto-refresh Badge -->
+<div class="auto-refresh-badge" id="autoRefreshBadge">
+    <i class="fas fa-sync-alt"></i> 
+    Auto-refresh <span id="countdownTimer">30</span>s
+</div>
+
+<div class="row" id="notificationsContainer">
     {% for item in notifications %}
         <!-- Filter Logic -->
         {% if request.GET.filter == 'unread' and item.is_read %}
@@ -174,7 +278,7 @@
         {% elif request.GET.filter == 'pinned' and not item.is_pinned %}
             <!-- Skip - don't show non-pinned notifications when filter is pinned -->
         {% else %}
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-3 notification-item" data-category="{{ item.notification.category }}">
             <div class="card {% if item.is_pinned %}pinned{% endif %}">
                 <div class="card-body">
                     <!-- Title Row -->
@@ -185,6 +289,12 @@
                                 <span class="pinned-badge ms-2">
                                     <i class="fas fa-thumbtack"></i> Pinned
                                 </span>
+                            {% endif %}
+                            <!-- ===== ATTACHMENT BADGE (NEW - STEP 6/7) ===== -->
+                            {% if item.has_attachment %}
+                            <span class="attachment-badge ms-2">
+                                <i class="fas fa-paperclip"></i> Attachment
+                            </span>
                             {% endif %}
                         </h5>
                         <span class="badge {% if not item.is_read %}bg-primary{% else %}bg-success{% endif %}">
@@ -312,5 +422,134 @@ function confirmDelete(notificationId, notificationTitle) {
         window.location.href = `/notifications/${notificationId}/delete/`;
     }
 }
+
+// ===== AUTO-REFRESH NOTIFICATIONS =====
+let lastCheckTime = new Date().toISOString();
+let notificationCount = 0;
+let countdown = 30;
+let countdownInterval;
+
+// Function to check for new notifications
+function checkNewNotifications() {
+    fetch(`/notifications/api/latest-notifications/?last_check=${encodeURIComponent(lastCheckTime)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.has_new) {
+                // Show toast notification
+                showToast(`${data.new_count} new notification(s) arrived!`);
+                
+                // Prepend new notifications to the top of the list
+                if (data.html) {
+                    const container = document.getElementById('notificationsContainer');
+                    if (container) {
+                        // Insert at the top
+                        container.insertAdjacentHTML('afterbegin', data.html);
+                        
+                        // Remove any "no notifications" message if present
+                        const emptyMessage = document.querySelector('.alert-info');
+                        if (emptyMessage && document.querySelectorAll('.notification-item').length > 0) {
+                            emptyMessage.remove();
+                        }
+                    }
+                }
+                
+                // Update last check time
+                lastCheckTime = data.timestamp;
+            }
+        })
+        .catch(error => console.log('Auto-refresh error:', error));
+}
+
+// Function to show toast notification
+function showToast(message) {
+    // Remove existing toast
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    // Create new toast
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.innerHTML = `
+        <i class="fas fa-bell fa-lg"></i>
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()">✕</button>
+    `;
+    
+    // Click to refresh page
+    toast.addEventListener('click', function(e) {
+        if (e.target.tagName !== 'BUTTON') {
+            location.reload();
+        }
+    });
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+// Function to update countdown display
+function updateCountdown() {
+    const countdownElement = document.getElementById('countdownTimer');
+    if (countdownElement) {
+        countdownElement.textContent = countdown;
+    }
+    
+    if (countdown <= 0) {
+        countdown = 30;
+        checkNewNotifications();
+    }
+    countdown--;
+}
+
+// Start auto-refresh
+function startAutoRefresh() {
+    // Clear existing interval
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+    }
+    
+    // Reset countdown
+    countdown = 30;
+    updateCountdown();
+    
+    // Start new interval
+    countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+// Stop auto-refresh (if needed)
+function stopAutoRefresh() {
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Start auto-refresh
+    startAutoRefresh();
+    
+    // Check for new notifications immediately
+    setTimeout(() => {
+        checkNewNotifications();
+    }, 1000);
+});
+
+// Optional: Stop auto-refresh when page is hidden (save resources)
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        stopAutoRefresh();
+    } else {
+        startAutoRefresh();
+        checkNewNotifications(); // Check immediately when page becomes visible
+    }
+});
 </script>
 {% endblock %}

@@ -17,4 +17,5 @@ urlpatterns = [
     path('publish-draft/<int:pk>/', views.publish_draft, name='publish_draft'),
     path('notifications/<int:pk>/toggle-pin/', views.toggle_pin_notification, name='toggle_pin_notification'),
     path('check-expired-pins/', views.check_expired_pins, name='check_expired_pins'),
+    path('api/latest-notifications/', views.latest_notifications_api, name='latest_notifications_api'),
 ]

@@ -1,4 +1,3 @@
-
 {% extends 'base.html' %}
 
 {% block title %}Dashboard{% endblock %}
@@ -322,78 +321,81 @@
     {% endif %}
 </div>
 
-<!-- ===== TEACHER DASHBOARD ===== -->
+<!-- ===== TEACHER DASHBOARD (With Non-Teaching Staff Style Notifications) ===== -->
 {% elif user.role == 'teacher' %}
+
+<!-- Stats Cards -->
 <div class="row g-4 mb-4">
     <div class="col-md-3">
         <a href="{% url 'draft_list' %}" class="text-decoration-none">
-            <div class="modern-card">
+            <div class="modern-card text-center">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-muted mb-2">Drafts</h6>
                         <h2 class="fw-bold">{{ drafts_count|default:"0" }}</h2>
-                        <small class="text-muted">Click to view</small>
                     </div>
                     <div class="display-4 text-primary">
                         <i class="fas fa-pen"></i>
                     </div>
                 </div>
+                <small class="text-muted">Click to view drafts</small>
             </div>
         </a>
     </div>
 
     <div class="col-md-3">
         <a href="{% url 'notification_list' %}?filter=sent" class="text-decoration-none">
-            <div class="modern-card">
+            <div class="modern-card text-center">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-muted mb-2">Sent</h6>
                         <h2 class="fw-bold">{{ total_sent|default:"0" }}</h2>
-                        <small class="text-muted">Click to view</small>
                     </div>
                     <div class="display-4 text-success">
                         <i class="fas fa-paper-plane"></i>
                     </div>
                 </div>
+                <small class="text-muted">Click to view sent</small>
             </div>
         </a>
     </div>
 
     <div class="col-md-3">
         <a href="{% url 'notification_list' %}?filter=received" class="text-decoration-none">
-            <div class="modern-card">
+            <div class="modern-card text-center">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-muted mb-2">Received</h6>
                         <h2 class="fw-bold">{{ total_received|default:"0" }}</h2>
-                        <small class="text-muted">Click to view</small>
                     </div>
                     <div class="display-4 text-info">
                         <i class="fas fa-inbox"></i>
                     </div>
                 </div>
+                <small class="text-muted">Click to view received</small>
             </div>
         </a>
     </div>
 
     <div class="col-md-3">
         <a href="{% url 'notification_list' %}?filter=unread" class="text-decoration-none">
-            <div class="modern-card">
+            <div class="modern-card text-center">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-muted mb-2">Unread</h6>
                         <h2 class="fw-bold text-warning">{{ unread_count|default:"0" }}</h2>
-                        <small class="text-muted">Click to view</small>
                     </div>
                     <div class="display-4 text-warning">
                         <i class="fas fa-envelope"></i>
                     </div>
                 </div>
+                <small class="text-muted">Click to view unread</small>
             </div>
         </a>
     </div>
 </div>
 
+<!-- Recent Notifications Section - Same as Non-Teaching Staff -->
 <div class="modern-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5 class="fw-bold mb-0">
@@ -408,56 +410,90 @@
         <div class="list-group list-group-flush">
             {% for item in recent_notifications %}
             <div class="list-group-item">
-                <div class="d-flex w-100 justify-content-between align-items-center">
-                    <div>
-                        <h6 class="mb-1 fw-bold">
-                            {{ item.notification.title }}
+                <div class="d-flex w-100 justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <!-- Title & Badges -->
+                        <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                            <h6 class="mb-0 fw-bold">{{ item.notification.title }}</h6>
                             {% if item.is_sent %}
-                                <span class="badge bg-success ms-2">Sent</span>
+                                <span class="badge bg-success">Sent by you</span>
                             {% else %}
                                 {% if not item.is_read %}
-                                    <span class="badge bg-danger ms-2">New</span>
+                                    <span class="badge bg-primary">Unread</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Read</span>
                                 {% endif %}
                             {% endif %}
-                        </h6>
-                        <p class="mb-1 text-muted">{{ item.notification.message|truncatechars:100 }}</p>
-                        <small>
-                            <i class="fas fa-user"></i>
-                            {% if item.is_sent %}
-                                You sent to students
-                            {% else %}
-                                Received from {{ item.notification.sender.get_role_display }}
+                            {% if item.notification.is_event_expired %}
+                                <span class="badge bg-danger">Event Expired</span>
                             {% endif %}
-                            <span class="ms-3">
-                                <i class="fas fa-clock"></i> published at {{ item.notification.display_time }}
-                            </span>
-                        </small>
-                        <div class="mt-3">
-                            <form method="POST" action="{% url 'set_reminder' item.notification.id %}" class="row g-2">
+                        </div>
+                        
+                        <!-- Message -->
+                        <p class="mb-2 text-muted">{{ item.notification.message|truncatechars:150 }}</p>
+                        
+                        <!-- Meta Info -->
+                        <div class="d-flex flex-wrap gap-3 mb-3">
+                            <small class="text-muted">
+                                <i class="fas fa-user"></i> 
+                                {% if item.is_sent %}
+                                    Sent to students
+                                {% else %}
+                                    From: {{ item.notification.sender.get_role_display }}
+                                {% endif %}
+                            </small>
+                            <small class="text-muted">
+                                <i class="fas fa-paper-plane"></i> 
+                                Sent: {{ item.notification.display_time|date:"M d, Y h:i A" }}
+                            </small>
+                            {% if item.notification.event_date %}
+                            <small class="text-muted">
+                                <i class="fas fa-calendar-alt"></i> 
+                                Event: {{ item.notification.event_date|date:"M d, Y h:i A" }}
+                            </small>
+                            {% endif %}
+                            <small>
+                                <span class="category-badge category-{{ item.notification.category }}">
+                                    {{ item.notification.get_category_display }}
+                                </span>
+                            </small>
+                        </div>
+                        
+                        <!-- Reminder Section -->
+                        <div class="mt-2">
+                            {% if item.reminder_time %}
+                            <div class="alert alert-success py-2 px-3 mb-2 d-inline-flex align-items-center gap-2">
+                                <i class="fas fa-bell"></i>
+                                <span><strong>Reminder:</strong> {{ item.reminder_time|date:"M d, Y h:i A" }}</span>
+                                {% if item.reminder_sent %}
+                                    <span class="badge bg-success">Sent</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <form method="POST" action="{% url 'set_reminder' item.notification.id %}" class="row g-2 align-items-center">
                                 {% csrf_token %}
-                                <div class="col-md-8">
-                                    <input type="datetime-local" name="reminder_time" class="form-control form-control-sm" value="{{ item.reminder_time|date:'Y-m-d\TH:i' }}" required>
+                                <div class="col-auto">
+                                    <input type="datetime-local" name="reminder_time" 
+                                           class="form-control form-control-sm" 
+                                           value="{{ item.reminder_time|date:'Y-m-d\\TH:i' }}"
+                                           style="width: 220px;"
+                                           {% if item.notification.is_event_expired %}disabled{% endif %}>
                                 </div>
-                                <div class="col-md-4">
-                                    <button type="submit" class="btn btn-warning btn-sm w-100">
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-warning btn-sm" 
+                                            {% if item.notification.is_event_expired %}disabled{% endif %}>
+                                        <i class="fas fa-bell"></i>
                                         {% if item.reminder_time %}Update{% else %}Set{% endif %} Reminder
                                     </button>
                                 </div>
+                                <div class="col-auto">
+                                    <a href="{% url 'notification_detail' item.notification.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </a>
+                                </div>
                             </form>
                         </div>
-                    </div>
-                    <div class="text-end">
-                        <span class="badge category-badge category-{{ item.notification.category }}">
-                            {{ item.notification.get_category_display }}
-                        </span>
-                        <br>
-                        {% if not item.is_sent and item.is_read %}
-                            <small class="text-success"><i class="fas fa-check-circle"></i> Read</small>
-                        {% elif not item.is_sent and not item.is_read %}
-                            <small class="text-warning"><i class="fas fa-circle"></i> Unread</small>
-                        {% endif %}
-                        <br>
-                        <a href="{% url 'notification_detail' item.notification.id %}" class="btn btn-sm btn-outline-primary mt-2">View</a>
                     </div>
                 </div>
             </div>
@@ -467,60 +503,13 @@
         <div class="text-center py-5">
             <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
             <h5 class="text-muted">No notifications yet</h5>
-            <a href="{% url 'notification_create' %}" class="btn btn-primary mt-3">Create Notification</a>
+            <p class="text-muted">When you send or receive notifications, they will appear here.</p>
+            <a href="{% url 'notification_create' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-plus"></i> Create Notification
+            </a>
         </div>
     {% endif %}
 </div>
-
-{% if received_notifications %}
-<div class="modern-card mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="fw-bold mb-0"><i class="fas fa-inbox text-primary"></i> Notifications from Principal</h5>
-    </div>
-    <div class="list-group list-group-flush">
-        {% for item in received_notifications %}
-        <div class="list-group-item">
-            <div class="d-flex w-100 justify-content-between align-items-center">
-                <div>
-                    <h6 class="mb-1 fw-bold">
-                        {{ item.notification.title }}
-                        {% if not item.is_read %}<span class="badge bg-danger ms-2">New</span>{% endif %}
-                    </h6>
-                    <p class="mb-1 text-muted">{{ item.notification.message|truncatechars:100 }}</p>
-                    <small><i class="fas fa-clock"></i> published at {{ item.notification.display_time }}</small>
-                    <div class="mt-3">
-                        <form method="POST" action="{% url 'set_reminder' item.notification.id %}" class="row g-2">
-                            {% csrf_token %}
-                            <div class="col-md-8">
-                                <input type="datetime-local" name="reminder_time" class="form-control form-control-sm" value="{{ item.reminder_time|date:'Y-m-d\TH:i' }}" required>
-                            </div>
-                            <div class="col-md-4">
-                                <button type="submit" class="btn btn-warning btn-sm w-100">
-                                    {% if item.reminder_time %}Update{% else %}Set{% endif %} Reminder
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="text-end">
-                    <span class="badge category-badge category-{{ item.notification.category }}">
-                        {{ item.notification.get_category_display }}
-                    </span>
-                    <br>
-                    {% if item.is_read %}
-                        <small class="text-success"><i class="fas fa-check-circle"></i> Read</small>
-                    {% else %}
-                        <small class="text-warning"><i class="fas fa-circle"></i> Unread</small>
-                    {% endif %}
-                    <br>
-                    <a href="{% url 'notification_detail' item.notification.id %}" class="btn btn-sm btn-outline-primary mt-2">View</a>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
 
 <!-- ===== STAFF DASHBOARD (With Clickable Stats Cards) ===== -->
 {% elif user.role == 'staff' %}
@@ -684,6 +673,68 @@
             <p class="text-muted">When you receive notifications, they will appear here.</p>
         </div>
     {% endif %}
+</div>
+
+<!-- ===== STUDENT DASHBOARD ===== -->
+{% elif user.role == 'student' %}
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="modern-card text-center">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-2">Total Notifications</h6>
+                    <h2 class="fw-bold">{{ total_notifications|default:"0" }}</h2>
+                </div>
+                <div class="display-4 text-primary">
+                    <i class="fas fa-bell"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="modern-card text-center">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-2">Unread</h6>
+                    <h2 class="fw-bold text-warning">{{ unread_count|default:"0" }}</h2>
+                </div>
+                <div class="display-4 text-warning">
+                    <i class="fas fa-envelope-open"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="modern-card text-center">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-2">Read</h6>
+                    <h2 class="fw-bold text-success">{{ read_count|default:"0" }}</h2>
+                </div>
+                <div class="display-4 text-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modern-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="fw-bold mb-0">
+            <i class="fas fa-bell text-primary"></i> Your Notifications
+        </h5>
+        <a href="{% url 'student_notifications' %}" class="btn btn-sm btn-outline-primary">
+            View All <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+    <div class="text-center py-5">
+        <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+        <h5 class="text-muted">Notifications will appear here</h5>
+        <p class="text-muted">Check back later for updates from teachers and principal.</p>
+    </div>
 </div>
 
 <!-- ===== FALLBACK ===== -->

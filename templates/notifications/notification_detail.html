@@ -250,6 +250,136 @@
         color: white;
     }
     
+    /* ===== ATTACHMENT SECTION STYLES (NEW) ===== */
+    .attachment-section {
+        background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.5s ease-out 0.25s;
+        animation-fill-mode: both;
+        border: 1px solid rgba(14, 165, 233, 0.2);
+    }
+    
+    .attachment-section:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .attachment-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #0ea5e9;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .attachment-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+        background: var(--white);
+        border-radius: 12px;
+        padding: 15px 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .attachment-box:hover {
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .attachment-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .attachment-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .attachment-icon i {
+        font-size: 28px;
+        color: white;
+    }
+    
+    .attachment-details {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .attachment-name {
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 5px;
+        word-break: break-all;
+    }
+    
+    .attachment-size {
+        font-size: 11px;
+        color: var(--gray);
+    }
+    
+    .attachment-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn-download {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .btn-download:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+        color: white;
+    }
+    
+    .btn-preview {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .btn-preview:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+        color: white;
+    }
+    
     /* Message Content */
     .message-content {
         background: var(--light);
@@ -349,6 +479,16 @@
             padding: 6px 14px;
             font-size: 11px;
         }
+        
+        .attachment-box {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .attachment-buttons {
+            width: 100%;
+            justify-content: flex-start;
+        }
     }
 </style>
 
@@ -434,6 +574,39 @@
                             {{ notification.get_category_display }}
                         </span>
                     </div>
+                    
+                    <!-- ===== ATTACHMENT SECTION (NEW - STEP 5) ===== -->
+                    {% if notification.attachment %}
+                    <div class="attachment-section">
+                        <div class="attachment-title">
+                            <i class="fas fa-paperclip"></i>
+                            Attachment
+                        </div>
+                        <div class="attachment-box">
+                            <div class="attachment-info">
+                                <div class="attachment-icon">
+                                    <i class="fas {{ notification.get_file_icon }}"></i>
+                                </div>
+                                <div class="attachment-details">
+                                    <span class="attachment-name">{{ notification.attachment_name|default:"Attachment" }}</span>
+                                    <span class="attachment-size">
+                                        {% if notification.attachment_size %}
+                                            {{ notification.attachment_size|filesizeformat }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="attachment-buttons">
+                                <a href="{{ notification.attachment.url }}" class="btn-download" download>
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                                <button class="btn-preview" onclick="window.open('{{ notification.attachment.url }}', '_blank')">
+                                    <i class="fas fa-eye"></i> Preview
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
                     
                     <!-- Message -->
                     <div class="message-content">

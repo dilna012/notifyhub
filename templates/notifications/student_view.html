@@ -58,6 +58,7 @@
         margin: 2px;
         border: 2px solid #667eea;
         color: #667eea;
+        transition: all 0.3s;
     }
     
     .btn-outline-primary:hover {
@@ -78,17 +79,37 @@
         margin-bottom: 20px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         border-left: 5px solid #667eea;
+        transition: transform 0.2s;
+    }
+    
+    .notification-card:hover {
+        transform: translateY(-3px);
     }
     
     .notification-title {
         color: #333;
         font-size: 1.5em;
         font-weight: 600;
+        margin-bottom: 15px;
+    }
+    
+    .notification-title i {
+        margin-right: 10px;
+        color: #667eea;
+    }
+    
+    .notification-message {
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 15px;
     }
     
     .notification-meta {
         display: flex;
         justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
         color: #777;
         font-size: 0.9em;
         border-top: 1px solid #eee;
@@ -117,39 +138,139 @@
         padding: 12px;
         border: 2px solid #e0e0e0;
         border-radius: 8px;
+        transition: border-color 0.3s;
     }
     
-    /* Reminder Section */
-    .reminder-section {
-        border-top: 1px dashed #dee2e6;
-        padding-top: 15px;
-        margin-top: 15px;
+    .search-box input:focus {
+        outline: none;
+        border-color: #667eea;
     }
     
-    .reminder-form {
-        background: #f8f9fa;
+    /* Event Date Alert */
+    .event-alert {
+        background: #e8f0fe;
         border-radius: 10px;
-        padding: 15px;
-        margin-top: 10px;
-        border: 1px solid #dee2e6;
+        padding: 10px 15px;
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
     
-    .reminder-status {
-        margin-top: 10px;
-        padding: 8px;
-        border-radius: 5px;
+    .event-alert i {
+        color: #667eea;
+        font-size: 16px;
     }
     
-    .reminder-status.success {
-        background: #d4edda;
-        color: #155724;
+    .event-expired {
+        background: #fee2e2;
+        border-left: 4px solid #dc2626;
+    }
+    
+    .event-expired i {
+        color: #dc2626;
+    }
+    
+    .expired-text {
+        color: #dc2626;
+        font-weight: 500;
+    }
+    
+    /* Attachment Styles */
+    .attachment-box {
+        background: #f0f9ff;
+        border-radius: 10px;
+        padding: 10px 15px;
+        margin: 15px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        border: 1px solid #bae6fd;
+    }
+    
+    .attachment-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .attachment-icon {
+        width: 35px;
+        height: 35px;
+        background: #0ea5e9;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .attachment-icon i {
+        font-size: 16px;
+        color: white;
+    }
+    
+    .attachment-details {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .attachment-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: #0369a1;
+    }
+    
+    .attachment-size {
+        font-size: 10px;
+        color: #64748b;
+    }
+    
+    .btn-download {
+        background: #0ea5e9;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 11px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s;
+    }
+    
+    .btn-download:hover {
+        background: #0284c7;
+        transform: translateY(-1px);
+    }
+    
+    .btn-preview {
+        background: #6366f1;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 11px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s;
+    }
+    
+    .btn-preview:hover {
+        background: #4f46e5;
+        transform: translateY(-1px);
     }
     
     .date-badge {
-        background: #f8f9fa;
+        background: rgba(255,255,255,0.2);
         padding: 5px 10px;
         border-radius: 20px;
-        color: #667eea;
         display: inline-block;
         margin-top: 10px;
     }
@@ -203,7 +324,7 @@
             
             <!-- Title -->
             <h2 class="notification-title">
-                <i class="fas fa-bell text-primary"></i> {{ notification.title }}
+                <i class="fas fa-bell"></i> {{ notification.title }}
             </h2>
             
             <!-- Message -->
@@ -211,14 +332,50 @@
                 {{ notification.message|linebreaks }}
             </div>
             
-            <!-- Event Date -->
+            <!-- ===== EVENT DATE SECTION (NEW) ===== -->
             {% if notification.event_date %}
-            <div class="alert alert-info">
+            <div class="event-alert {% if notification.is_event_expired %}event-expired{% endif %}">
                 <i class="fas fa-calendar-alt"></i>
-                <strong>Event:</strong> {{ notification.event_date|date:"l, F j, Y h:i A" }}
+                <div>
+                    <strong>{% if notification.is_event_expired %}Event Date (Expired){% else %}Event Date{% endif %}:</strong>
+                    {{ notification.event_date|date:"l, F j, Y" }}
+                    <br>
+                    <small><i class="fas fa-clock"></i> Time: {{ notification.event_date|date:"h:i A" }}</small>
+                </div>
+                {% if notification.is_event_expired %}
+                <span class="expired-text ms-auto">
+                    <i class="fas fa-hourglass-end"></i> Expired
+                </span>
+                {% endif %}
             </div>
             {% endif %}
             
+            <!-- ===== ATTACHMENT SECTION (NEW) ===== -->
+            {% if notification.attachment %}
+            <div class="attachment-box">
+                <div class="attachment-info">
+                    <div class="attachment-icon">
+                        <i class="fas {{ notification.get_file_icon }}"></i>
+                    </div>
+                    <div class="attachment-details">
+                        <span class="attachment-name">{{ notification.attachment_name|default:"Attachment" }}</span>
+                        <span class="attachment-size">
+                            {% if notification.attachment_size %}
+                                {{ notification.attachment_size|filesizeformat }}
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="attachment-buttons">
+                    <a href="{{ notification.attachment.url }}" class="btn-download" download>
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                    <button class="btn-preview" onclick="window.open('{{ notification.attachment.url }}', '_blank')">
+                        <i class="fas fa-eye"></i> Preview
+                    </button>
+                </div>
+            </div>
+            {% endif %}
             
             <!-- Meta Info -->
             <div class="notification-meta">
@@ -228,7 +385,7 @@
                     </span>
                 </div>
                 <div>
-                    <i class="fas fa-clock"></i> {{ notification.created_at|date:"M d, Y" }}
+                    <i class="fas fa-clock"></i> Published: {{ notification.created_at|date:"M d, Y" }}
                 </div>
             </div>
         </div>
@@ -238,19 +395,10 @@
         <div class="text-center p-5 bg-white rounded-3">
             <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
             <h3 class="text-muted">No Notifications</h3>
+            <p class="text-muted">Check back later for updates from your college.</p>
         </div>
     </div>
     {% endfor %}
-</div>
-
-<!-- Debug Buttons -->
-<div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
-    <button class="btn btn-sm btn-info" onclick="showAllReminders()" title="Show all reminders">
-        <i class="fas fa-bell"></i>
-    </button>
-    <button class="btn btn-sm btn-danger" onclick="clearAllReminders()" title="Clear all reminders">
-        <i class="fas fa-trash"></i>
-    </button>
 </div>
 
 <script>
@@ -272,7 +420,6 @@ function filterByCategory(category, btn) {
     });
 }
 
-
 // ===== SEARCH FUNCTION =====
 document.getElementById('searchInput')?.addEventListener('input', function() {
     const term = this.value.toLowerCase();
@@ -283,5 +430,9 @@ document.getElementById('searchInput')?.addEventListener('input', function() {
     });
 });
 
+// ===== LOAD FUNCTION =====
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Student Notification Board Loaded');
+});
 </script>
 {% endblock %}

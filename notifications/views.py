@@ -108,6 +108,8 @@ def notification_list(request):
                 'reminder_sent': read_status.reminder_sent,
                 'is_pinned': read_status.is_pinned,
                 'pinned_at': read_status.pinned_at,
+                'has_attachment': bool(notification.attachment),  # Added
+                'attachment_name': notification.attachment_name,  # Added
             })
 
         pinned = [item for item in notifications_with_status if item['is_pinned']]
@@ -165,7 +167,9 @@ def notification_list(request):
                     'reminder_sent': read_status.reminder_sent,
                     'is_pinned': read_status.is_pinned,
                     'pinned_at': read_status.pinned_at,
-                    'is_sent': True
+                    'is_sent': True,
+                    'has_attachment': bool(notification.attachment),  # Added
+                    'attachment_name': notification.attachment_name,  # Added
                 })
             else:
                 if filter_type == 'unread' and read_status.is_read:
@@ -179,7 +183,9 @@ def notification_list(request):
                     'reminder_sent': read_status.reminder_sent,
                     'is_pinned': read_status.is_pinned,
                     'pinned_at': read_status.pinned_at,
-                    'is_sent': False
+                    'is_sent': False,
+                    'has_attachment': bool(notification.attachment),  # Added
+                    'attachment_name': notification.attachment_name,  # Added
                 })
 
         pinned = [item for item in notifications_with_status if item['is_pinned']]
@@ -219,6 +225,8 @@ def notification_list(request):
                 'reminder_sent': read_status.reminder_sent,
                 'is_pinned': read_status.is_pinned,
                 'pinned_at': read_status.pinned_at,
+                'has_attachment': bool(notification.attachment),  # Added
+                'attachment_name': notification.attachment_name,  # Added
             })
 
         pinned = [item for item in notifications_with_status if item['is_pinned']]
@@ -235,18 +243,28 @@ def notification_list(request):
             'notifications': []
         })
         
-# ===== NOTIFICATION CREATE VIEW =====
+# ===== NOTIFICATION CREATE VIEW (UPDATED WITH FILE UPLOAD) =====
 @login_required
 @sender_required
 def notification_create(request):
-    """View for teachers and principal to create notifications"""
+    """View for teachers and principal to create notifications with file attachments"""
     if request.method == 'POST':
-        # Pass user to form
-        form = NotificationForm(request.POST, user=request.user)
+        # Pass user to form and include FILES for file upload
+        form = NotificationForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             notification = form.save(commit=False)
             notification.sender = request.user
-            notification.save()
+            
+            # ===== HANDLE FILE ATTACHMENT =====
+            if request.FILES.get('attachment'):
+                attachment = request.FILES['attachment']
+                notification.attachment = attachment
+                notification.attachment_name = attachment.name
+                notification.attachment_size = attachment.size
+            else:
+                notification.attachment = None
+                notification.attachment_name = None
+                notification.attachment_size = 0
             
             # Check if it's a draft or publish
             if 'draft' in request.POST:
@@ -314,10 +332,10 @@ def notification_create(request):
         'now': timezone.now(),
     })
 
-# ===== NOTIFICATION DETAIL VIEW =====
+# ===== NOTIFICATION DETAIL VIEW (UPDATED WITH ATTACHMENT) =====
 @login_required
 def notification_detail(request, pk):
-    """View notification details"""
+    """View notification details with attachment"""
     notification = get_object_or_404(Notification, pk=pk)
     
     # Check if user has permission to view this notification
@@ -364,7 +382,7 @@ def draft_list(request):
     
     return render(request, 'notifications/draft_list.html', {'drafts': drafts})
 
-# ===== NOTIFICATION STATS VIEW (UPDATED - Only for Teacher/Staff notifications) =====
+# ===== NOTIFICATION STATS VIEW =====
 @login_required
 @sender_required
 def notification_stats(request, pk):
@@ -377,8 +395,7 @@ def notification_stats(request, pk):
             messages.error(request, "You can only view stats for your own notifications.")
             return redirect('notification_list')
         
-        # ===== CHECK IF NOTIFICATION WAS SENT TO TEACHERS OR STAFF =====
-        # If notification is only sent to students, show error and redirect
+        # Check if notification was sent to teachers or staff
         if not notification.send_to_teachers and not notification.send_to_staff:
             messages.error(request, "Statistics are not available for student-only notifications.")
             return redirect('notification_detail', pk=pk)
@@ -437,9 +454,9 @@ def notification_dashboard(request):
         count=Count('id')
     ).order_by('-count')
     
-    # ===== READ STATS FOR EACH NOTIFICATION =====
+    # Read stats for each notification
     read_stats = []
-    for notification in all_notifications[:50]:  # Limit to last 50
+    for notification in all_notifications[:50]:
         total_recipients = 0
         if notification.send_to_students:
             total_recipients += User.objects.filter(role='student', is_active=True).count()
@@ -469,7 +486,7 @@ def notification_dashboard(request):
         'total_notifications': notifications.count(),
         'category_stats': category_stats,
         'recent_activity': recent_activity,
-        'read_stats': read_stats,  # Make sure this is passed
+        'read_stats': read_stats,
         'is_principal': request.user.role == 'principal',
     }
     
@@ -484,6 +501,9 @@ def notification_delete(request, pk):
     # Check if the logged-in user is the sender
     if request.user == notification.sender:
         notification_title = notification.title
+        # Also delete the attachment file if exists
+        if notification.attachment:
+            notification.attachment.delete(save=False)
         notification.delete()
         messages.success(request, f'Notification "{notification_title}" has been deleted successfully.')
     else:
@@ -536,10 +556,21 @@ def edit_draft(request, pk):
     )
 
     if request.method == 'POST':
-        form = NotificationForm(request.POST, instance=notification, user=request.user)
+        form = NotificationForm(request.POST, request.FILES, instance=notification, user=request.user)
 
         if form.is_valid():
             notification = form.save(commit=False)
+            
+            # Handle attachment update
+            if request.FILES.get('attachment'):
+                # Delete old attachment if exists
+                if notification.attachment:
+                    notification.attachment.delete(save=False)
+                attachment = request.FILES['attachment']
+                notification.attachment = attachment
+                notification.attachment_name = attachment.name
+                notification.attachment_size = attachment.size
+            
             from django.utils import timezone
 
             if 'draft' in request.POST:
@@ -619,6 +650,30 @@ def publish_draft(request, pk):
         draft.is_draft = False
         draft.published_at = timezone.now()
         draft.save()
+        
+        # Create ReadStatus entries for recipients when publishing
+        recipients = User.objects.none()
+        if draft.send_to_students:
+            recipients = recipients | User.objects.filter(role='student', is_active=True)
+        if draft.send_to_teachers:
+            recipients = recipients | User.objects.filter(role='teacher', is_active=True)
+        if draft.send_to_staff:
+            recipients = recipients | User.objects.filter(role='staff', is_active=True)
+        
+        if recipients.exists():
+            existing_read_statuses = ReadStatus.objects.filter(
+                notification=draft,
+                user__in=recipients
+            )
+            existing_users = set(existing_read_statuses.values_list('user', flat=True))
+            
+            new_recipients = [user for user in recipients if user.id not in existing_users]
+            if new_recipients:
+                read_statuses = [
+                    ReadStatus(user=recipient, notification=draft)
+                    for recipient in new_recipients
+                ]
+                ReadStatus.objects.bulk_create(read_statuses)
 
         messages.success(request, "Notification published successfully!")
         return redirect("notification_list")
@@ -651,7 +706,7 @@ def toggle_pin_notification(request, pk):
     read_status.save()
     return redirect(request.META.get('HTTP_REFERER', 'notification_list'))
 
-# ===== NEW: API ENDPOINT TO CHECK EXPIRED PINS =====
+# ===== API: CHECK EXPIRED PINS =====
 @login_required
 def check_expired_pins(request):
     """API endpoint to check and unpin expired notifications"""
@@ -674,3 +729,105 @@ def check_expired_pins(request):
         status.save()
     
     return JsonResponse({'unpinned_count': unpinned_count})
+
+# ===== NEW: AUTO-REFRESH NOTIFICATIONS API =====
+@login_required
+def latest_notifications_api(request):
+    """API endpoint to get latest notifications without page refresh"""
+    
+    # Get last check timestamp from request
+    last_check = request.GET.get('last_check')
+    if last_check:
+        try:
+            last_check = datetime.fromisoformat(last_check.replace('Z', '+00:00'))
+        except:
+            last_check = timezone.now() - timedelta(minutes=5)
+    else:
+        last_check = timezone.now() - timedelta(minutes=5)
+    
+    # Get new notifications based on user role
+    if request.user.role == 'staff':
+        new_notifications = Notification.objects.filter(
+            is_draft=False,
+            send_to_staff=True,
+            created_at__gt=last_check
+        ).order_by('-created_at')
+        
+    elif request.user.role == 'student':
+        new_notifications = Notification.objects.filter(
+            is_draft=False,
+            send_to_students=True,
+            created_at__gt=last_check
+        ).order_by('-created_at')
+        
+    elif request.user.role == 'teacher':
+        sent_notifications = Notification.objects.filter(
+            sender=request.user,
+            is_draft=False,
+            created_at__gt=last_check
+        )
+        received_notifications = Notification.objects.filter(
+            is_draft=False,
+            send_to_teachers=True,
+            created_at__gt=last_check
+        ).exclude(sender=request.user)
+        new_notifications = (sent_notifications | received_notifications).distinct().order_by('-created_at')
+        
+    elif request.user.role == 'principal':
+        new_notifications = Notification.objects.filter(
+            sender=request.user,
+            is_draft=False,
+            created_at__gt=last_check
+        ).order_by('-created_at')
+    else:
+        new_notifications = []
+    
+    # Get count and prepare HTML
+    new_count = new_notifications.count()
+    
+    # Build HTML for new notifications
+    html = ''
+    for notification in new_notifications:
+        read_status = ReadStatus.objects.filter(
+            user=request.user,
+            notification=notification
+        ).first()
+        
+        is_read = read_status.is_read if read_status else False
+        
+        html += f'''
+        <div class="notification-item" data-category="{notification.category}">
+            <div class="notification-card new-notification" style="border-left: 4px solid #fbbf24; background: #fffbeb;">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <span class="category-badge category-{notification.category}">
+                            <i class="fas fa-tag"></i> {notification.get_category_display()}
+                        </span>
+                        <h5 class="mt-2 mb-2">
+                            <i class="fas fa-bell text-primary"></i> {notification.title}
+                        </h5>
+                        <p class="text-muted">{notification.message|truncatechars:150}</p>
+                        <div class="d-flex gap-3 mt-2">
+                            <small><i class="fas fa-user"></i> {notification.sender.get_role_display()}</small>
+                            <small><i class="fas fa-clock"></i> {notification.created_at|date:"M d, Y h:i A"}</small>
+                        </div>
+                        <div class="mt-3">
+                            <a href="/notifications/detail/{notification.id}/" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                    <span class="badge {'bg-secondary' if is_read else 'bg-danger'}">
+                        {'Read' if is_read else 'New'}
+                    </span>
+                </div>
+            </div>
+        </div>
+        '''
+    
+    return JsonResponse({
+        'new_count': new_count,
+        'html': html,
+        'timestamp': timezone.now().isoformat(),
+        'has_new': new_count > 0
+    })
