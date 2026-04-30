@@ -372,33 +372,34 @@
 {% elif user.role == 'teacher' %}
 
 <div class="row g-4 mb-4">
-    <!-- Profile Card -->
+    <!-- Profile Card - Smaller size like other cards -->
     <div class="col-md-3">
         <div class="modern-card text-center" style="height: 100%; display: flex; flex-direction: column;">
-            <div class="profile-img-container">
+            <div class="profile-img-container" style="width: 80px; height: 80px; margin: 10px auto;">
                 {% if user.profile_picture %}
-                    <img src="{{ user.profile_picture.url }}" alt="Profile">
+                    <img src="{{ user.profile_picture.url }}" alt="Profile" style="max-width: 70px; max-height: 70px;">
                 {% else %}
-                    <div class="default-avatar">
-                        <i class="fas fa-chalkboard-user"></i>
+                    <div class="default-avatar" style="width: 80px; height: 80px;">
+                        <i class="fas fa-chalkboard-user" style="font-size: 40px;"></i>
                     </div>
                 {% endif %}
             </div>
-            <h5 class="mb-1">{{ user.get_full_name|default:user.username }}</h5>
-            <p class="text-muted small mb-2">
+            <h5 class="mb-1" style="font-size: 1rem;">{{ user.get_full_name|default:user.username }}</h5>
+            <p class="text-muted small mb-2" style="font-size: 0.7rem;">
                 <i class="fas fa-chalkboard-teacher"></i> {{ user.get_role_display }}
             </p>
             <div style="margin-top: auto;">
-                <a href="{% url 'edit_profile' %}" class="btn btn-sm btn-outline-primary w-100">
+                <a href="{% url 'edit_profile' %}" class="btn btn-sm btn-outline-primary w-100" style="font-size: 0.75rem; padding: 5px 10px;">
                     <i class="fas fa-edit me-1"></i> Edit Profile
                 </a>
             </div>
         </div>
     </div>
     
+    <!-- Drafts Card -->
     <div class="col-md-3">
         <a href="{% url 'draft_list' %}" class="text-decoration-none">
-            <div class="modern-card text-center">
+            <div class="modern-card text-center" style="height: 100%; display: flex; flex-direction: column;">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-muted mb-2">Drafts</h6>
@@ -408,14 +409,15 @@
                         <i class="fas fa-pen"></i>
                     </div>
                 </div>
-                <small class="text-muted">Click to view drafts</small>
+                <small class="text-muted mt-2">Click to view</small>
             </div>
         </a>
     </div>
 
+    <!-- Sent Card -->
     <div class="col-md-3">
         <a href="{% url 'notification_list' %}?filter=sent" class="text-decoration-none">
-            <div class="modern-card text-center">
+            <div class="modern-card text-center" style="height: 100%; display: flex; flex-direction: column;">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-muted mb-2">Sent</h6>
@@ -425,14 +427,15 @@
                         <i class="fas fa-paper-plane"></i>
                     </div>
                 </div>
-                <small class="text-muted">Click to view sent</small>
+                <small class="text-muted mt-2">Click to view</small>
             </div>
         </a>
     </div>
 
+    <!-- Received Card -->
     <div class="col-md-3">
         <a href="{% url 'notification_list' %}?filter=received" class="text-decoration-none">
-            <div class="modern-card text-center">
+            <div class="modern-card text-center" style="height: 100%; display: flex; flex-direction: column;">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-muted mb-2">Received</h6>
@@ -442,13 +445,39 @@
                         <i class="fas fa-inbox"></i>
                     </div>
                 </div>
-                <small class="text-muted">Click to view received</small>
+                <small class="text-muted mt-2">Click to view</small>
             </div>
         </a>
     </div>
 </div>
 
-<!-- Recent Notifications -->
+<!-- Second Row: With Unread Button -->
+<div class="row g-4 mb-4">
+    <!-- Unread Card - NEW -->
+    <div class="col-md-3">
+        <a href="{% url 'notification_list' %}?filter=unread" class="text-decoration-none">
+            <div class="modern-card text-center" style="height: 100%; display: flex; flex-direction: column; background: linear-gradient(135deg, #fff3e0, #ffe0b2);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Unread</h6>
+                        <h2 class="fw-bold text-warning">{{ unread_count|default:"0" }}</h2>
+                    </div>
+                    <div class="display-4 text-warning">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                </div>
+                <small class="text-muted mt-2">Click to view unread</small>
+            </div>
+        </a>
+    </div>
+    
+    <!-- Empty cards for balance (optional) -->
+    <div class="col-md-3"></div>
+    <div class="col-md-3"></div>
+    <div class="col-md-3"></div>
+</div>
+
+<!-- Recent Notifications Section -->
 <div class="modern-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5 class="fw-bold mb-0">
@@ -559,37 +588,37 @@
         </div>
     {% endif %}
 </div>
-
 <!-- ===== STAFF DASHBOARD ===== -->
 {% elif user.role == 'staff' %}
 
 <div class="row g-4 mb-4">
-    <!-- Profile Card -->
+    <!-- Profile Card - Smaller size like other cards -->
     <div class="col-md-3">
         <div class="modern-card text-center" style="height: 100%; display: flex; flex-direction: column;">
-            <div class="profile-img-container">
+            <div class="profile-img-container" style="width: 80px; height: 80px; margin: 10px auto;">
                 {% if user.profile_picture %}
-                    <img src="{{ user.profile_picture.url }}" alt="Profile">
+                    <img src="{{ user.profile_picture.url }}" alt="Profile" style="max-width: 70px; max-height: 70px;">
                 {% else %}
-                    <div class="default-avatar">
-                        <i class="fas fa-user-tie"></i>
+                    <div class="default-avatar" style="width: 80px; height: 80px;">
+                        <i class="fas fa-user-tie" style="font-size: 40px;"></i>
                     </div>
                 {% endif %}
             </div>
-            <h5 class="mb-1">{{ user.get_full_name|default:user.username }}</h5>
-            <p class="text-muted small mb-2">
+            <h5 class="mb-1" style="font-size: 1rem;">{{ user.get_full_name|default:user.username }}</h5>
+            <p class="text-muted small mb-2" style="font-size: 0.7rem;">
                 <i class="fas fa-user-tie"></i> {{ user.get_role_display }}
             </p>
             <div style="margin-top: auto;">
-                <a href="{% url 'edit_profile' %}" class="btn btn-sm btn-outline-primary w-100">
+                <a href="{% url 'edit_profile' %}" class="btn btn-sm btn-outline-primary w-100" style="font-size: 0.75rem; padding: 5px 10px;">
                     <i class="fas fa-edit me-1"></i> Edit Profile
                 </a>
             </div>
         </div>
     </div>
     
+    <!-- Total Notifications Card -->
     <div class="col-md-3">
-        <div class="modern-card text-center">
+        <div class="modern-card text-center" style="height: 100%; display: flex; flex-direction: column;">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h6 class="text-muted mb-2">Total Notifications</h6>
@@ -602,32 +631,40 @@
         </div>
     </div>
     
+    <!-- Unread Card -->
     <div class="col-md-3">
-        <div class="modern-card text-center">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-2">Unread</h6>
-                    <h2 class="fw-bold text-warning">{{ unread_count|default:"0" }}</h2>
+        <a href="{% url 'notification_list' %}?filter=unread" class="text-decoration-none">
+            <div class="modern-card text-center" style="height: 100%; display: flex; flex-direction: column; background: linear-gradient(135deg, #fff3e0, #ffe0b2);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Unread</h6>
+                        <h2 class="fw-bold text-warning">{{ unread_count|default:"0" }}</h2>
+                    </div>
+                    <div class="display-4 text-warning">
+                        <i class="fas fa-envelope-open"></i>
+                    </div>
                 </div>
-                <div class="display-4 text-warning">
-                    <i class="fas fa-envelope-open"></i>
-                </div>
+                <small class="text-muted mt-2">Click to view</small>
             </div>
-        </div>
+        </a>
     </div>
     
+    <!-- Read Card -->
     <div class="col-md-3">
-        <div class="modern-card text-center">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-2">Read</h6>
-                    <h2 class="fw-bold text-success">{{ read_count|default:"0" }}</h2>
+        <a href="{% url 'notification_list' %}?filter=read" class="text-decoration-none">
+            <div class="modern-card text-center" style="height: 100%; display: flex; flex-direction: column;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Read</h6>
+                        <h2 class="fw-bold text-success">{{ read_count|default:"0" }}</h2>
+                    </div>
+                    <div class="display-4 text-success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
                 </div>
-                <div class="display-4 text-success">
-                    <i class="fas fa-check-circle"></i>
-                </div>
+                <small class="text-muted mt-2">Click to view</small>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 
@@ -716,7 +753,6 @@
         </div>
     {% endif %}
 </div>
-
 <!-- ===== STUDENT DASHBOARD ===== -->
 {% elif user.role == 'student' %}
 
