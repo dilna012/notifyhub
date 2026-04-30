@@ -556,29 +556,53 @@ def edit_draft(request, pk):
     )
 
     if request.method == 'POST':
-        form = NotificationForm(request.POST, request.FILES, instance=notification, user=request.user)
+        form = NotificationForm(
+            request.POST,
+            request.FILES,
+            instance=notification,
+            user=request.user
+        )
 
         if form.is_valid():
             notification = form.save(commit=False)
-            
+
             # Handle attachment update
             if request.FILES.get('attachment'):
-                # Delete old attachment if exists
                 if notification.attachment:
                     notification.attachment.delete(save=False)
+
                 attachment = request.FILES['attachment']
                 notification.attachment = attachment
                 notification.attachment_name = attachment.name
                 notification.attachment_size = attachment.size
-            
+
             from django.utils import timezone
 
-            if 'draft' in request.POST:
+            if 'publish' in request.POST:
+                notification.is_draft = False
+                notification.published_at = timezone.now()
+                notification.updated_at = timezone.now()
+                notification.save()
+
+                messages.success(request, "Notification published successfully!")
+                return redirect('notification_list')
+
+            elif 'draft' in request.POST:
                 notification.is_draft = True
                 notification.updated_at = timezone.now()
                 notification.save()
 
-    return redirect('draft_list')
+                messages.success(request, "Draft updated successfully!")
+                return redirect('draft_list')
+
+    else:
+        form = NotificationForm(instance=notification, user=request.user)
+
+    return render(request, 'notifications/edit_draft.html', {
+        'form': form,
+        'notification': notification
+    })
+
 
 @login_required
 def set_reminder(request, pk):
