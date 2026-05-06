@@ -1,4 +1,4 @@
-#!/home/dilna/Desktop/project/notification/notification_system_project/venv/bin/python3
+#!/home/anamika/temp/notifyhub/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

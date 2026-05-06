@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV /home/dilna/Desktop/project/notification/notification_system_project/venv
+set -gx VIRTUAL_ENV /home/anamika/temp/notifyhub/venv
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH
